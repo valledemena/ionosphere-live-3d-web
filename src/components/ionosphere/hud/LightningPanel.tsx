@@ -4,6 +4,7 @@ import { Zap } from "lucide-react";
 import { LightningData } from "../types";
 import { PanelBox, SourceDot } from "./SpaceWeatherPanel";
 import { glmStatus } from "@/lib/iono/lightning";
+import { useNow } from "@/hooks/use-now";
 
 /** W-4 F2a #8: lightning panel (EN for all new UI).
  * GLM granule freshness per satellite (input truth, Americas coverage
@@ -11,7 +12,8 @@ import { glmStatus } from "@/lib/iono/lightning";
  * active warning present; no warnings means no sprites). Outside the
  * Americas there are no real-time strokes in v1 — visible limitation. */
 export default function LightningPanel({ lightning }: { lightning: LightningData | null }) {
-  if (!lightning) {
+  const now = useNow();
+  if (!lightning || now === null) {
     return (
       <PanelBox title="Lightning">
         <div className="text-xs text-slate-500 py-6 text-center animate-pulse">
@@ -20,7 +22,6 @@ export default function LightningPanel({ lightning }: { lightning: LightningData
       </PanelBox>
     );
   }
-  const now = Date.now();
   const g19 = glmStatus(
     lightning.granules.map((g) => ({ sat: g.sat, start: g.start, end: g.end, size: g.size })),
     "G19",

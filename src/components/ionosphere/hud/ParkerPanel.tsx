@@ -3,6 +3,7 @@
 import { SpaceWeatherData } from "../types";
 import { PanelBox, SourceDot } from "./SpaceWeatherPanel";
 import { spiralPoints, sectorPolarity, findCrossings, spiralLagDeg } from "@/lib/iono/parker";
+import { useNow } from "@/hooks/use-now";
 
 /** W-4 F2b #12: Parker spiral panel (EN for all new UI).
  * Top-down ecliptic schematic from LIVE solar wind (O12): the arm
@@ -10,7 +11,8 @@ import { spiralPoints, sectorPolarity, findCrossings, spiralLagDeg } from "@/lib
  * crossings CALCULATED from the data (notification only on a real
  * recent crossing — no crossing means no notification). */
 export default function ParkerPanel({ sw }: { sw: SpaceWeatherData | null }) {
-  if (!sw) {
+  const now = useNow();
+  if (!sw || now === null) {
     return (
       <PanelBox title="Parker spiral">
         <div className="text-xs text-slate-500 py-6 text-center animate-pulse">
@@ -26,7 +28,7 @@ export default function ParkerPanel({ sw }: { sw: SpaceWeatherData | null }) {
   const magLive = sw.mag.source !== "unavailable" && sw.mag.series.length > 0;
   const pol = sectorPolarity(sw.wind.bx);
   const crossings = findCrossings(sw.mag.series.map((p) => ({ t: p.t, bx: p.bx })));
-  const recent = crossings.filter((t) => Date.now() - t < 6 * 3600_000);
+  const recent = crossings.filter((t) => now - t < 6 * 3600_000);
   const lag = spiralLagDeg(v, 1);
 
   // SVG: 120x90, Sun at center-left, Earth at (86, 45), 1 AU = 56 px.

@@ -5,6 +5,7 @@ import { SpaceWeatherData, FlareData } from "../types";
 import { PanelBox, SourceDot } from "./SpaceWeatherPanel";
 import { flareState, matchFlr, type FlrEvent } from "@/lib/iono/flare";
 import { dRegionAbsorptionDb } from "@/lib/iono/ionomath";
+import { useNow } from "@/hooks/use-now";
 
 /** W-4 #3: panel flare -> SID.
  * El estado sale de la serie GOES viva (O3.1, determinista en replay);
@@ -20,7 +21,8 @@ export default function FlarePanel({
   flares: FlareData | null;
   epochMs: number;
 }) {
-  if (!sw) {
+  const now = useNow();
+  if (!sw || now === null) {
     return (
       <PanelBox title="Flare / SID">
         <div className="text-xs text-slate-500 py-6 text-center animate-pulse">
@@ -34,9 +36,9 @@ export default function FlarePanel({
   const fluxNow = st.peak > 0 ? st.peak : 0;
   const sidDb = dRegionAbsorptionDb(1, fluxNow, 0);
   const win: [number, number] =
-    sw && epochMs < Date.now() - 60_000
+    sw && epochMs < now - 60_000
       ? [epochMs - 12 * 3600_000, epochMs] // replay: ventana de 12 h
-      : [Date.now() - 24 * 3600_000, Date.now()]; // vivo: ultimas 24 h
+      : [now - 24 * 3600_000, now]; // vivo: ultimas 24 h
   const flrList: FlrEvent[] = flares
     ? matchFlr(
         flares.flares.map((f) => ({
