@@ -14,15 +14,13 @@ const LASCO_C2 = "https://soho.nascom.nasa.gov/data/realtime/c2/512/latest.jpg";
  * El transito de 1-3 dias se muestra con barrido acelerado y factor VISIBLE
  * (O1.5); el frente NO simula plasma (O1.2, texto exacto del ruling 252). */
 export default function CmePanel({ cme, epochMs }: { cme: CmeData | null; epochMs: number }) {
-  const [sweep, setSweep] = useState<number | null>(null);
+  const [st, setSt] = useState<{ simId: string | null; v: number | null }>({ simId: null, v: null });
   const [lascoOk, setLascoOk] = useState(true);
   const raf = useRef(0);
+  const simId = cme?.event?.simId ?? null;
+  const sweep = st.simId === simId ? st.v : null;
 
-  useEffect(() => {
-    setSweep(null);
-    return () => cancelAnimationFrame(raf.current);
-  }, [cme?.event?.simId]);
-
+  useEffect(() => () => cancelAnimationFrame(raf.current), [simId]);
   useEffect(() => () => cancelAnimationFrame(raf.current), []);
 
   if (!cme) {
@@ -39,9 +37,10 @@ export default function CmePanel({ cme, epochMs }: { cme: CmeData | null; epochM
     cancelAnimationFrame(raf.current);
     const t0 = performance.now();
     const dur = 8000;
+    const idAtStart = simId;
     const step = (t: number) => {
       const f = Math.min(1, (t - t0) / dur);
-      setSweep(target * f);
+      setSt({ simId: idAtStart, v: target * f });
       if (f < 1) raf.current = requestAnimationFrame(step);
     };
     raf.current = requestAnimationFrame(step);

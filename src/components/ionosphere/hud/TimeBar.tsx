@@ -1,7 +1,8 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { Clock, Play, Pause, RotateCcw, Repeat } from "lucide-react";
+import { useNow } from "@/hooks/use-now";
 import {
   SceneSettings,
   replaySliderOffset,
@@ -20,13 +21,7 @@ interface Props {
 /** Barra de tiempo: LIVE vs REPLAY (historia GIRO 168 h, W-4 C1) */
 export default function TimeBar({ settings, onChange, maxReplayMin }: Props) {
   const [scrubbing, setScrubbing] = useState(false);
-  const [nowMs, setNowMs] = useState(0);
-
-  useEffect(() => {
-    setNowMs(Date.now());
-    const t = setInterval(() => setNowMs(Date.now()), 1000);
-    return () => clearInterval(t);
-  }, []);
+  const nowMs = useNow(1000) ?? 0;
 
   const replay = settings.timeMode === "replay";
   const minutesBack = replaySliderOffset(maxReplayMin, settings.replayMinutes); // 0 = −max (izq) · max = «ahora» (der)

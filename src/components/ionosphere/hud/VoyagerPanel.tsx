@@ -11,13 +11,12 @@ import { pulseLapse, lightTimeSec } from "@/lib/iono/voyager";
  * public JPL params + HONEST pulse: the schematic sweeps in 10 s with
  * a VISIBLE factor (real one-way light time shown). DSN Robledo note. */
 export default function VoyagerPanel({ voyager }: { voyager: VoyagerData | null }) {
-  const [sweep, setSweep] = useState<number | null>(null);
+  const [st, setSt] = useState<{ au: number | null; v: number | null }>({ au: null, v: null });
   const raf = useRef(0);
+  const auKey = voyager?.au ?? null;
+  const sweep = st.au === auKey ? st.v : null;
 
-  useEffect(() => {
-    setSweep(null);
-    return () => cancelAnimationFrame(raf.current);
-  }, [voyager?.au]);
+  useEffect(() => () => cancelAnimationFrame(raf.current), [auKey]);
   useEffect(() => () => cancelAnimationFrame(raf.current), []);
 
   if (!voyager || voyager.au == null || voyager.lightHours == null || voyager.prW == null) {
@@ -34,9 +33,10 @@ export default function VoyagerPanel({ voyager }: { voyager: VoyagerData | null 
   const startSweep = () => {
     cancelAnimationFrame(raf.current);
     const t0 = performance.now();
+    const auAtStart = auKey;
     const step = (t: number) => {
       const f = Math.min(1, (t - t0) / 10000);
-      setSweep(f);
+      setSt({ au: auAtStart, v: f });
       if (f < 1) raf.current = requestAnimationFrame(step);
     };
     raf.current = requestAnimationFrame(step);

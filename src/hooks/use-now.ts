@@ -1,27 +1,26 @@
 import * as React from "react"
 
-const TICK_MS = 30_000
-
-function getSnapshot(): number {
-  // Estable dentro del tick: cambia solo al cruzar el borde de 30 s.
-  return Math.floor(Date.now() / TICK_MS) * TICK_MS
-}
-
-function subscribe(onStoreChange: () => void): () => void {
-  const id = setInterval(onStoreChange, TICK_MS)
-  return () => clearInterval(id)
-}
-
-function getServerSnapshot(): null {
-  return null
-}
+const DEFAULT_TICK_MS = 30_000
 
 /**
- * Hora alineada al tick mas cercano (30 s), legible en render sin impureza
- * (drop 339, react-hooks/purity). Devuelve `null` en SSR/hidratacion: el
- * caller debe renderizar su placeholder existente hasta que llegue el
- * snapshot del cliente (nunca NaN).
+ * Hora alineada al tick mas cercano (`tickMs`, default 30 s), legible en
+ * render sin impureza (drop 339, react-hooks/purity). Devuelve `null` en
+ * SSR/hidratacion: el caller debe renderizar su placeholder existente hasta
+ * que llegue el snapshot del cliente (nunca NaN). `getSnapshot` es estable
+ * dentro del tick: cambia solo al cruzar el borde (drop 340).
  */
-export function useNow(): number | null {
+export function useNow(tickMs: number = DEFAULT_TICK_MS): number | null {
+  const subscribe = React.useCallback(
+    (onStoreChange: () => void): (() => void) => {
+      const id = setInterval(onStoreChange, tickMs)
+      return () => clearInterval(id)
+    },
+    [tickMs]
+  )
+  const getSnapshot = React.useCallback(
+    (): number => Math.floor(Date.now() / tickMs) * tickMs,
+    [tickMs]
+  )
+  const getServerSnapshot = React.useCallback((): null => null, [])
   return React.useSyncExternalStore(subscribe, getSnapshot, getServerSnapshot)
 }
