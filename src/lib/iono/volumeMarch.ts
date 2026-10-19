@@ -76,10 +76,6 @@ export function raySphereT(
   return { hit: true, t0: -b - s, t1: -b + s };
 }
 
-function clamp01(v: number): number {
-  return v < 0 ? 0 : v > 1 ? 1 : v;
-}
-
 /**
  * Altura TRUE del nivel muestreado a fraccion altNorm (n1-182, fix 183):
  * el sampler GL interpola en CENTROS DE TEXEL gz = altNorm*A - 0.5 con
@@ -115,7 +111,7 @@ export function marchRay(
   const cmap = o.cmap ?? "viridis";
   const outer = raySphereT(ro[0], ro[1], ro[2], rd[0], rd[1], rd[2], o.outerR);
   if (!outer.hit) return null;
-  let tEnter = Math.max(outer.t0, 0);
+  const tEnter = Math.max(outer.t0, 0);
   let tExit = outer.t1;
   const inner = raySphereT(ro[0], ro[1], ro[2], rd[0], rd[1], rd[2], o.innerR);
   if (inner.hit && inner.t0 > tEnter) {

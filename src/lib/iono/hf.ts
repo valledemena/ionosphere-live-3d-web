@@ -7,7 +7,6 @@
 
 import {
   LatLon,
-  R_EARTH_KM,
   greatCircleKm,
   slerpLatLon,
   hopGeometry,

@@ -75,7 +75,7 @@ export function neF2(h: number, foF2: number, hmF2: number, B0: number, B1: numb
   if (foF2 <= 0) return 0;
   const nm = FO_TO_NM * foF2 * foF2;
   if (h <= hmF2) {
-    let x = (hmF2 - h) / Math.max(B0, 1);
+    const x = (hmF2 - h) / Math.max(B0, 1);
     if (x <= 1.6) {
       const xp = Math.pow(x, B1);
       return nm * Math.exp(-xp / Math.cosh(x));
@@ -160,7 +160,6 @@ export function modelFoF2(
   // Base diurna + reserva nocturna
   const dayBase = 3.2 + 7.8 * Math.pow(Math.max(cosChi, 0), 0.7);
   const nightBase = 1.6 + 1.8 * Math.exp(-lat / 40);
-  const diurnal = cosChi > -0.1 ? dayBase : nightBase;
   // Transición crepuscular suave
   const t = smoothstep(-0.12, 0.15, cosChi);
   let fo = (1 - t) * nightBase + t * dayBase;

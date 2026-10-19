@@ -220,7 +220,7 @@ export function magnetopauseMesh(Bz_nT: number, Dp_nPa: number): MagnetopauseMes
   const pt = (thDeg: number, phDeg: number): Vec3 => {
     const th = thDeg * D2R;
     const ph = phDeg * D2R;
-    let r = r0 * Math.pow(2 / (1 + Math.cos(th)), al);
+    const r = r0 * Math.pow(2 / (1 + Math.cos(th)), al);
     let x = r * Math.cos(th);
     if (x < 0) x *= s;
     const rho = Math.sqrt(Math.max(r * r - x * x, 0));

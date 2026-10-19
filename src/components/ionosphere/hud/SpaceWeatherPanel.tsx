@@ -166,7 +166,7 @@ export default function SpaceWeatherPanel({
 }
 
 /** W-2 alertas: semaforo sobre bundles publicados + ultimas transiciones. */
-import { AlertLevel, RULE_NAMES, type AlertSnapshot } from "@/lib/iono/alerts";
+import { RULE_NAMES, type AlertSnapshot } from "@/lib/iono/alerts";
 
 const LVL_TXT = ["GREEN", "AMBER", "RED", "OFF"] as const;
 const LVL_CLS = ["text-emerald-400", "text-amber-300", "text-red-400", "text-slate-500"] as const;

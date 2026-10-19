@@ -29,7 +29,7 @@ export function vec3ToLatLon(x: number, y: number, z: number): LatLon {
   const r = Math.sqrt(x * x + y * y + z * z) || 1;
   const lat = Math.asin(y / r) * RAD;
   // x = -cos(phi)cos(lat), z = sin(phi)cos(lat)
-  let phi = Math.atan2(z, -x); // phi en [-pi, pi]
+  const phi = Math.atan2(z, -x); // phi en [-pi, pi]
   let lon = phi * RAD - 180;
   if (lon < -180) lon += 360;
   if (lon > 180) lon -= 360;

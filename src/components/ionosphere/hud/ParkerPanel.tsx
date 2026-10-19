@@ -1,6 +1,5 @@
 "use client";
 
-import { Sun } from "lucide-react";
 import { SpaceWeatherData } from "../types";
 import { PanelBox, SourceDot } from "./SpaceWeatherPanel";
 import { spiralPoints, sectorPolarity, findCrossings, spiralLagDeg } from "@/lib/iono/parker";

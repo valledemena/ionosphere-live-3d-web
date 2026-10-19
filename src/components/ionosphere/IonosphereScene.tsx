@@ -618,8 +618,6 @@ export default function IonosphereScene(props: Props) {
         const so = S.current;
         if (!so?.stationsObj) return;
         const rect = renderer.domElement.getBoundingClientRect();
-        const px = ((e.clientX - rect.left) / rect.width) * 2 - 1;
-        const py = -((e.clientY - rect.top) / rect.height) * 2 + 1;
         const p = new THREE.Vector3();
         let bestIdx = -1,
           bestD = 24; // px umbral

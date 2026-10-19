@@ -242,7 +242,7 @@ async function fetchStation(code: string, now: Date): Promise<StationData | null
 }
 
 /** kc2g FAILOVER-ONLY (FASE A): 1 GET por ciclo, solo con ronda fallida. */
-async function fetchKc2g(now: Date): Promise<Kc2gStation[]> {
+async function fetchKc2g(_now: Date): Promise<Kc2gStation[]> {
   try {
     const ctrl = new AbortController();
     const timer = setTimeout(() => ctrl.abort(), 12000);

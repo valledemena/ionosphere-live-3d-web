@@ -278,11 +278,11 @@ export function dscom(
   const betasq = 1.0 - emsq;
   const rtemsq = Math.sqrt(betasq);
 
-  let peo = 0.0;
-  let pinco = 0.0;
-  let plo = 0.0;
-  let pgho = 0.0;
-  let pho = 0.0;
+  const peo = 0.0;
+  const pinco = 0.0;
+  const plo = 0.0;
+  const pgho = 0.0;
+  const pho = 0.0;
   const day = epoch + 18261.5 + tc / 1440.0;
   const xnodce = fmod2(4.523602 - 9.2422029e-4 * day, TWOPI);
   const stem = Math.sin(xnodce);
@@ -491,18 +491,18 @@ export function dsinit(q: DsinitIn, st: DsinitState): DsinitOut {
   if (nm < 0.0052359877 && nm > 0.0034906585) irez = 1;
   if (nm >= 8.26e-3 && nm <= 9.24e-3 && em >= 0.5) irez = 2;
 
-  let ses = ss1 * zns * ss5;
-  let sis = ss2 * zns * (sz11 + sz13);
-  let sls = -zns * ss3 * (sz1 + sz3 - 14.0 - 6.0 * emsq);
-  let sghs = ss4 * zns * (sz31 + sz33 - 6.0);
+  const ses = ss1 * zns * ss5;
+  const sis = ss2 * zns * (sz11 + sz13);
+  const sls = -zns * ss3 * (sz1 + sz3 - 14.0 - 6.0 * emsq);
+  const sghs = ss4 * zns * (sz31 + sz33 - 6.0);
   let shs = -zns * ss2 * (sz21 + sz23);
   if (inclm < 5.2359877e-2 || inclm > PI - 5.2359877e-2) shs = 0.0;
   if (sinim !== 0.0) shs = shs / sinim;
   const sgs = sghs - cosim * shs;
 
-  let dedt = ses + s1 * znl * s5;
-  let didt = sis + s2 * znl * (z11 + z13);
-  let dmdt = sls - znl * s3 * (z1 + z3 - 14.0 - 6.0 * emsq);
+  const dedt = ses + s1 * znl * s5;
+  const didt = sis + s2 * znl * (z11 + z13);
+  const dmdt = sls - znl * s3 * (z1 + z3 - 14.0 - 6.0 * emsq);
   const sghl = s4 * znl * (z31 + z33 - 6.0);
   let shll = -znl * s2 * (z21 + z23);
   if (inclm < 5.2359877e-2 || inclm > PI - 5.2359877e-2) shll = 0.0;
@@ -513,7 +513,7 @@ export function dsinit(q: DsinitIn, st: DsinitState): DsinitOut {
     dnodt = dnodt + shll / sinim;
   }
 
-  let dndt = 0.0;
+  const dndt = 0.0;
   const theta = fmod2(gsto + tc * rptim, TWOPI);
   em = em + dedt * t;
   inclm = inclm + didt * t;
@@ -525,7 +525,7 @@ export function dsinit(q: DsinitIn, st: DsinitState): DsinitOut {
   let g201 = 0, g211 = 0, g300 = 0, g310 = 0, g322 = 0;
   let g410 = 0, g422 = 0, g520 = 0, g521 = 0, g532 = 0, g533 = 0;
   let sini2 = 0;
-  let f220 = 0, f221 = 0, f310 = 0, f311 = 0, f321 = 0, f322 = 0, f330 = 0;
+  let f220 = 0, f221 = 0, f311 = 0, f321 = 0, f322 = 0, f330 = 0;
   let f441 = 0, f442 = 0, f522 = 0, f523 = 0, f542 = 0, f543 = 0;
   let del1 = 0, del2 = 0, del3 = 0;
   let xfact = 0, xlamo = 0, xli = 0, xni = 0, atime = 0;
@@ -1010,7 +1010,7 @@ export function sgp4init(q: Sgp4InitIn, satrec: ElsetRec): boolean {
       satrec.method = "d";
       satrec.isimp = 1;
       const tc = 0.0;
-      let inclm = satrec.inclo;
+      const inclm = satrec.inclo;
 
       const ds = dscom(q.epoch, satrec.ecco, satrec.argpo, tc, satrec.inclo, satrec.nodeo, satrec.noUnkozai);
       const snodm = ds.snodm, cnodm = ds.cnodm;
@@ -1079,7 +1079,7 @@ export function sgp4init(q: Sgp4InitIn, satrec: ElsetRec): boolean {
       satrec.argpo = dp.argpp;
       satrec.mo = dp.mp;
 
-      let argpm = 0.0, nodem = 0.0, mm = 0.0;
+      const argpm = 0.0, nodem = 0.0, mm = 0.0;
       const di = dsinit(
         {
           xke: satrec.xke, cosim, emsq, argpo: satrec.argpo,
@@ -1142,7 +1142,7 @@ export function sgp4(satrec: ElsetRec, tsince: number, r: number[], v: number[])
   satrec.t = tsince;
   satrec.error = 0;
 
-  let xmdf = satrec.mo + satrec.mdot * satrec.t;
+  const xmdf = satrec.mo + satrec.mdot * satrec.t;
   const argpdf = satrec.argpo + satrec.argpdot * satrec.t;
   const nodedf = satrec.nodeo + satrec.nodedot * satrec.t;
   let argpm = argpdf;
@@ -1201,7 +1201,7 @@ export function sgp4(satrec: ElsetRec, tsince: number, r: number[], v: number[])
     satrec.error = 2;
     return false;
   }
-  let am = Math.pow(satrec.xke / nm, 2.0 / 3.0) * tempa * tempa;
+  const am = Math.pow(satrec.xke / nm, 2.0 / 3.0) * tempa * tempa;
   nm = satrec.xke / Math.pow(am, 1.5);
   em = em - tempe;
 
@@ -1279,7 +1279,7 @@ export function sgp4(satrec: ElsetRec, tsince: number, r: number[], v: number[])
   const aynl = ep * Math.sin(argpp) + tempA * satrec.aycof;
   const xl = mp + argpp + nodep + tempA * satrec.xlcof * axnl;
 
-  let u = fmod2(xl - nodep, TWOPI);
+  const u = fmod2(xl - nodep, TWOPI);
   let eo1 = u;
   let tem5 = 9999.9;
   let ktr = 1;

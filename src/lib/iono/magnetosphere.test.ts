@@ -18,7 +18,6 @@ import {
   magnetoKey,
   magnetopauseMesh,
   magnetosphereField,
-  midnightLon,
   shueAlpha,
   shueR0,
   shueRadius,

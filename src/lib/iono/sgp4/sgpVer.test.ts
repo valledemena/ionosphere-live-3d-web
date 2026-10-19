@@ -57,13 +57,6 @@ function tleList(): [string, string][] {
   return out;
 }
 
-function close(a: number, b: number, absTol: number): boolean {
-  const d = Math.abs(a - b);
-  if (d <= absTol) return true;
-  if (b !== 0) return d / Math.abs(b) <= REL;
-  return false;
-}
-
 describe("313 binding oracle: official SGP4 verification set", () => {
   it("propagates every .e row within the dual criterion, error-free", () => {
     const fails: string[] = [];
@@ -116,7 +109,7 @@ describe("313 binding oracle: official SGP4 verification set", () => {
       }
       if (fails.length > 12) break;
     }
-    // eslint-disable-next-line no-console
+     
     console.log(
       `rows=${nrows} worstAbsPos=${worstP} worstAbsVel=${worstV} worstRelPos=${worstRelP} worstRelVel=${worstRelV}`,
     );
