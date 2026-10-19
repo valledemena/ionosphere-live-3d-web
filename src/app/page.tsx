@@ -47,6 +47,7 @@ import { RING_LABEL } from "@/lib/iono/satellites/ring1963";
 import { AlertEngine, buildAlertInput, type AlertSnapshot } from "@/lib/iono/alerts";
 import { tourCount, tourKey } from "@/lib/iono/tour";
 import { getSunInfo } from "@/lib/iono/solar";
+import { useNow } from "@/hooks/use-now";
 
 async function fetchJson<T>(url: string, timeoutMs = 30000): Promise<T | null> {
   try {
@@ -98,14 +99,12 @@ export default function Home() {
   const [ideasOpen, setIdeasOpen] = useState(false);
   // P1-280: reloj client-only — el prerender estatico no fija hora
   // (evita mismatch de hidratacion React #418 con el HTML servido).
-  const [now, setNow] = useState<Date | null>(null);
-  const [mounted, setMounted] = useState(false);
+  const nowMs = useNow(1000) ?? 0;
 
   // W-2 alertas: motor vivo en ref; se evalua al publicar datos (sw/ionos),
   // sin fetch nuevo. El wiring (normalizacion de clase + honestidad de
   // fuentes + mediana MUF) vive en buildAlertInput: contrato testeado.
   const alertsRef = useRef<AlertEngine | null>(null);
-  if (!alertsRef.current) alertsRef.current = new AlertEngine();
   const [alertSnap, setAlertSnap] = useState<AlertSnapshot | null>(null);
   // W-4 B1 slice: readout "A->B pk X.X" desde la escena.
   const [slicePeak, setSlicePeak] = useState<string | null>(null);
@@ -127,8 +126,7 @@ export default function Home() {
   }, []);
 
   useEffect(() => {
-    const eng = alertsRef.current;
-    if (!eng) return;
+    const eng = alertsRef.current ?? (alertsRef.current = new AlertEngine());
     const mufs = (ionos?.stations ?? []).map((s) => s.muf3000);
     eng.evaluate(buildAlertInput(sw, mufs, Date.now() / 1000));
     setAlertSnap({
@@ -267,25 +265,6 @@ export default function Home() {
     };
   }, []);
 
-  // reloj
-  useEffect(() => {
-    setMounted(true);
-    setNow(new Date());
-    const t = setInterval(() => setNow(new Date()), 1000);
-    return () => clearInterval(t);
-  }, []);
-
-  // W-4 C2: avance automático del replay (espejo App.cpp:2139-2141).
-  useEffect(() => {
-    if (settings.timeMode !== "replay" || !settings.replayPlaying) return;
-    const t = setInterval(() => {
-      onSettingsChange({
-        replayMinutes: replayAdvance(settings.replayMinutes, settings.replaySpeed, 0.5, 10080, settings.replayLoop),
-      });
-    }, 500);
-    return () => clearInterval(t);
-  }, [settings.timeMode, settings.replayPlaying, settings.replaySpeed, settings.replayLoop, settings.replayMinutes]);
-
   // ─── selección de estaciones: 1º TX, 2º RX, 3º reset ───
   const onStationPick = useCallback(
     (code: string | null) => {
@@ -309,7 +288,17 @@ export default function Home() {
     setSettings((s) => ({ ...s, ...patch }));
   }, []);
 
-  const nowMs = now ? now.getTime() : 0;
+  // W-4 C2: avance automático del replay (espejo App.cpp:2139-2141).
+  useEffect(() => {
+    if (settings.timeMode !== "replay" || !settings.replayPlaying) return;
+    const t = setInterval(() => {
+      onSettingsChange({
+        replayMinutes: replayAdvance(settings.replayMinutes, settings.replaySpeed, 0.5, 10080, settings.replayLoop),
+      });
+    }, 500);
+    return () => clearInterval(t);
+  }, [settings.timeMode, settings.replayPlaying, settings.replaySpeed, settings.replayLoop, settings.replayMinutes]);
+
   const effSec = useMemo(
     () => (nowMs - (settings.timeMode === "replay" ? settings.replayMinutes * 60_000 : 0)) / 1000,
     [settings.timeMode, settings.replayMinutes, nowMs]
@@ -369,7 +358,7 @@ export default function Home() {
               </span>
             </h1>
             <p className="text-[11px] text-slate-500 mt-0.5 flex items-center gap-2">
-              <span className="font-mono tabular-nums" suppressHydrationWarning>{mounted && now ? now.toISOString().slice(11, 19) : "--:--:--"} UTC</span>
+              <span className="font-mono tabular-nums" suppressHydrationWarning>{nowMs ? new Date(nowMs).toISOString().slice(11, 19) : "--:--:--"} UTC</span>
               <span className="w-1 h-1 rounded-full bg-cyan-400/60" />
               <span className="font-mono">
                 subsolar {subsolar(new Date(effSec * 1000)).lat.toFixed(0)}{"\u00B0"} {subsolar(new Date(effSec * 1000)).lon >= 0 ? "E" : "W"}{" "}

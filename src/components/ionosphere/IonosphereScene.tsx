@@ -136,7 +136,9 @@ interface Props {
 export default function IonosphereScene(props: Props) {
   const mountRef = useRef<HTMLDivElement>(null);
   const propsRef = useRef(props);
-  propsRef.current = props;
+  useEffect(() => {
+    propsRef.current = props;
+  });
 
   // objetos mutables de escena (viven fuera de React)
   const S = useRef<{
