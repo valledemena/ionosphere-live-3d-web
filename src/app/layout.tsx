@@ -14,7 +14,7 @@ export const metadata: Metadata = {
   description:
     "Visualizador ionosférico 3D en tiempo real: clima espacial NOAA, ionosondas GIRO, aurora OVATION y propagación HF con ray-tracing multi-salto.",
   icons: {
-    icon: "https://z-cdn.chatglm.cn/z-ai/static/logo.svg",
+    icon: "/logo.svg",
   },
 };
 
