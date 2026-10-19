@@ -1,0 +1,40 @@
+# dependencies
+node_modules/
+.pnp
+.pnp.js
+
+# next.js
+.next/
+out/
+build/
+dist/
+
+# logs
+*.log
+dev.log
+server.log
+
+# typescript
+tsconfig.tsbuildinfo
+*.tsbuildinfo
+
+# env / secrets
+.env
+.env.*
+!.env.example
+
+# os / editor
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+
+# test / coverage
+coverage/
+
+# prisma local db
+prisma/*.db
+prisma/*.db-journal
+
+# vercel
+.vercel/
