@@ -2,7 +2,12 @@
 
 import { useEffect, useState } from "react";
 import { Clock, Play, Pause, RotateCcw, Repeat } from "lucide-react";
-import { SceneSettings, replaySliderOffset } from "../types";
+import {
+  SceneSettings,
+  replaySliderOffset,
+  timeBarClockLabel,
+  timeBarEffectiveMinutes,
+} from "../types";
 
 const SPEEDS = [0.5, 1, 2, 4, 8];
 
@@ -25,8 +30,7 @@ export default function TimeBar({ settings, onChange, maxReplayMin }: Props) {
 
   const replay = settings.timeMode === "replay";
   const minutesBack = replaySliderOffset(maxReplayMin, settings.replayMinutes); // 0 = −max (izq) · max = «ahora» (der)
-  const effMin = settings.timeMode === "replay" ? settings.replayMinutes : 0;
-  const eff = new Date(nowMs - effMin * 60_000);
+  const effMin = timeBarEffectiveMinutes(settings.timeMode, settings.replayMinutes);
 
   return (
     <div
@@ -47,7 +51,7 @@ export default function TimeBar({ settings, onChange, maxReplayMin }: Props) {
       <div className="flex items-center gap-1.5 text-slate-400">
         <Clock size={13} />
         <span className="font-mono text-xs tabular-nums text-slate-200" suppressHydrationWarning>
-          {nowMs ? `${eff.toISOString().slice(11, 16)} UTC` : "--:--:--"}
+          {timeBarClockLabel(nowMs, effMin)}
         </span>
       </div>
 

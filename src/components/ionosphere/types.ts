@@ -365,6 +365,25 @@ export function replaySliderOffset(maxReplayMin: number, position: number): numb
   return maxReplayMin - position;
 }
 
+/** Guard de época del reloj del TimeBar (espejo IonosphereScene.tsx:780/1542):
+ * los minutos de replay solo descuentan en modo replay; en LIVE el epoch es
+ * «ahora» (effMin 0). Puro. TU: replay.test.ts. */
+export function timeBarEffectiveMinutes(
+  timeMode: SceneSettings["timeMode"],
+  replayMinutes: number,
+): number {
+  return timeMode === "replay" ? replayMinutes : 0;
+}
+
+/** Etiqueta del reloj del TimeBar: nowMs == 0 (SSR y primer render cliente,
+ * 327) devuelve el placeholder "--:--:--" sin horas horneadas; con reloj
+ * inyectado formatea HH:MM UTC del epoch (ahora − effMin). Determinista en
+ * ambos lados de la hidratación. Puro. TU: replay.test.ts. */
+export function timeBarClockLabel(nowMs: number, effMin: number): string {
+  if (!nowMs) return "--:--:--";
+  return `${new Date(nowMs - effMin * 60_000).toISOString().slice(11, 16)} UTC`;
+}
+
 /** Referencia del tamaño de punto (default 11 == base 140 del shader). */
 export const STATION_POINT_REF = 11;
 

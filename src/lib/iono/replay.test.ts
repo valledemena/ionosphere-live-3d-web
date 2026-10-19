@@ -8,6 +8,8 @@ import {
   sampleStationAt,
   replayAdvance,
   replaySliderOffset,
+  timeBarClockLabel,
+  timeBarEffectiveMinutes,
   DEFAULT_SETTINGS,
   STATION_POINT_REF,
   stationPointSizeClamp,
@@ -121,5 +123,31 @@ describe("TimeBar slider: mapeo espejo (quirk 326/328)", () => {
     for (const pos of [0, 5, 120, 5040, 9960, 10075, MAX]) {
       expect(replaySliderOffset(MAX, replaySliderOffset(MAX, pos))).toBe(pos);
     }
+  });
+});
+
+describe("TimeBar reloj/guard de época (cobertura 331, garantías 327/329)", () => {
+  // Reloj inyectado: sin Date.now() real (anti-flaky).
+  const T = Date.parse("2026-10-19T13:12:56Z");
+  it("nowMs == 0 (SSR) -> placeholder --:--:-- (sin horas horneadas)", () => {
+    expect(timeBarClockLabel(0, 0)).toBe("--:--:--");
+  });
+  it("primer render cliente ahora también 0 -> mismo placeholder (hidratación estable)", () => {
+    expect(timeBarClockLabel(0, 120)).toBe("--:--:--");
+    expect(timeBarClockLabel(0, 120)).toBe(timeBarClockLabel(0, 120));
+  });
+  it("reloj inyectado LIVE: HH:MM UTC exacto", () => {
+    expect(timeBarClockLabel(T, 0)).toBe("13:12 UTC");
+  });
+  it("reloj inyectado REPLAY −2 h: resta exacta (smoke 329)", () => {
+    expect(timeBarClockLabel(T, 120)).toBe("11:12 UTC");
+  });
+  it("guard: replayMinutes solo descuenta en replay, en LIVE cuenta 0", () => {
+    expect(timeBarEffectiveMinutes("replay", 120)).toBe(120);
+    expect(timeBarEffectiveMinutes("live", 120)).toBe(0);
+  });
+  it("guard con minutos 0 y LIVE con historial largo = epoch ahora", () => {
+    expect(timeBarEffectiveMinutes("replay", 0)).toBe(0);
+    expect(timeBarClockLabel(T, timeBarEffectiveMinutes("live", 10080))).toBe("13:12 UTC");
   });
 });
