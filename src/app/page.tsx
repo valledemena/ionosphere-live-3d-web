@@ -23,6 +23,7 @@ import RadioPanel from "@/components/ionosphere/hud/RadioPanel";
 import TimeBar from "@/components/ionosphere/hud/TimeBar";
 import Legend from "@/components/ionosphere/hud/Legend";
 import IdeasPanel from "@/components/ionosphere/hud/IdeasPanel";
+import { IDEAS } from "@/components/ionosphere/ideasData";
 
 import {
   SpaceWeatherData,
@@ -374,7 +375,7 @@ export default function Home() {
               <FlaskConical size={13} />
               <span className="hidden sm:inline">Explorar ideas</span>
               <span className="sm:hidden">Ideas</span>
-              <span className="text-[9px] bg-cyan-400/20 rounded-full px-1.5 py-0.5">21</span>
+              <span className="text-[9px] bg-cyan-400/20 rounded-full px-1.5 py-0.5">{IDEAS.length}</span>
             </button>
             <a
               href="https://github.com/davidlopezsalvador/ionosphere-web"

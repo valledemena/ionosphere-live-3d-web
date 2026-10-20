@@ -9,8 +9,7 @@ reales de fuentes públicas** (NOAA, NASA, Kyoto WDC, CelesTrak, ...).
 
 Todas son públicas y no requieren API key:
 
-- `services.swpc.noaa.gov` — NOAA SWPC: aurora (OVATION), clima espacial
-- `www.swpc.noaa.gov` — NOAA SWPC: D-RAP (absorción de la región D)
+- `services.swpc.noaa.gov` — NOAA SWPC: aurora (OVATION), clima espacial, D-RAP (imagen de validación)
 - `api.weather.gov` — NOAA/NWS: alertas meteorológicas activas
 - `ccmc.gsfc.nasa.gov` — NASA CCMC DONKI: CME, flare (FLR), RBE, GST
 - `celestrak.org` — TLE NORAD (grupo active)
@@ -30,7 +29,10 @@ Todas son públicas y no requieren API key:
 - **Three.js** — escena WebGL (Tierra, auroras, magnetosfera, satélites)
 - **Tailwind CSS 4** + **Radix UI / shadcn** (estilo `new-york`, componentes en `src/components/ui`)
 - **Recharts** — gráficos de los paneles
-- **Zustand**, **TanStack Query/Table** — declarados en `package.json` (hoy sin importaciones activas en `src/`)
+- **Zustand**, **TanStack Query/Table** y otras dependencias de la plantilla
+  (`framer-motion`, `next-intl`, `date-fns`, `sharp`, `uuid`, `zod`, `react-markdown`,
+  `@dnd-kit/*`, `@reactuses/core`) — declaradas en `package.json` sin importaciones
+  activas en `src/`; candidatas a retirar en un drop de dependencias
 - **Vitest 5** (tests), **ESLint 9** (flat config en `eslint.config.mjs`), **TypeScript 5**
 - Probado con **Node 24 / npm 11**
 
@@ -59,7 +61,7 @@ npm run build
 npm run start
 
 # Tests / lint
-npm test        # vitest run (borra .next antes si existe un build)
+npm test        # vitest run; si existe .next, bórralo ANTES (puede romper la resolución)
 npm run lint    # eslint .
 ```
 
@@ -92,13 +94,15 @@ contrario carga el fallback.
 
 ## Gates del proyecto
 
-| Gate | Comando | Estado (drop-345) |
+| Gate | Comando | Estado (drop-350) |
 | --- | --- | --- |
 | ESLint | `npm run lint` | 0 errores, 0 warnings |
 | TypeScript | `npx tsc --noEmit` | 0 |
-| Tests | `npm test` | 399/399 (43 ficheros) |
+| Tests | `npm test` | 411/411 (44 ficheros) |
 | Build | `npm run build` | 0 |
 | npm audit | `npm audit --omit=dev` | 0 vulnerabilidades |
+
+Nota: las gates borran `.next` antes de `npm test`; el script `test` no lo hace.
 
 ## Flujo de desarrollo (drops)
 

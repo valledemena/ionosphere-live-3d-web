@@ -50,7 +50,7 @@ Files:
 
 Numerics: the reference builds with DBLE (`real(8)`); JS `number`
 is IEEE-754 double, the same width. Full bit-exact validation of the
-evaluation chain against the 200 reference vectors lands in 9c:
+evaluation chain against the 200 reference vectors landed in 9c:
 binding criterion densities 1e-3 relative / T 0.01 K / dmissing exact
 (dual: bit-exact desired, engine 1-ulp documented); the reference file
 carries a smooth reference-side systematic ceiling of 4.85e-4 / 0.00496

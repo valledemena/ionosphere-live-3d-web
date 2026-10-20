@@ -3,19 +3,36 @@
 /** Catálogo de ideas exploradas con evaluación de adecuación.
  *  Contenido derivado de la revisión de código en profundidad del repositorio
  *  ionosphere-live-3d (C++/OpenGL) y de la verificación de fuentes de datos.
+ *  Drop 350: estados reclasificados contra src/ del explorador web
+ *  (auditoría con archivo:línea en 71_impl_350_mimo.md). Los textos de
+ *  "Hallazgos" y "Fuentes" son el SNAPSHOT histórico de la revisión C++,
+ *  no el estado actual en vivo.
  */
 
 export interface IdeaItem {
   id: string;
   title: string;
-  status: "demo" | "propuesta" | "aplazada"; // aplazada = fuera de paridad (poda 136), sin ciclo propio
+  status: "demo" | "parcial" | "propuesta" | "aplazada"; // aplazada = fuera de paridad (poda 136), sin ciclo propio; parcial = núcleo implementado, falta explícita en `missing`
   impact: number; // 1-5
   effort: number; // 1-5
   category: "visual" | "fisica" | "datos" | "radio" | "ux";
   summary: string;
   detail: string;
   port?: string; // cómo portarlo al C++
+  missing?: string; // obligatorio con status "parcial": qué falta exactamente
 }
+
+/** Fecha del snapshot de la revisión C++/fuentes (histórico, no en vivo;
+ *  entró con ideasData en el baseline 259d5bd). */
+export const REVIEW_SNAPSHOT = "2026-10-19";
+
+/** Conteo por estado derivado de IDEAS (sin hardcodes). */
+export function countIdeasByStatus(ideas: IdeaItem[] = IDEAS): Record<IdeaItem["status"], number> {
+  const c: Record<IdeaItem["status"], number> = { demo: 0, parcial: 0, propuesta: 0, aplazada: 0 };
+  for (const i of ideas) c[i.status]++;
+  return c;
+}
+
 
 export const IDEAS: IdeaItem[] = [
   {
@@ -158,54 +175,58 @@ export const IDEAS: IdeaItem[] = [
       "Stars.cpp: añadir la banda (cross de vectores del plano galáctico) — 15 líneas; Hipparcos como textura de atributos.",
   },
 
-  // ─── propuestas no implementadas en el demo ───
+  // ─── propuestas promocionadas a demo/parcial en el drop 350 (auditoría src) ───
   {
     id: "god",
     title: "God rays / rayos crepusculares del sol real",
-    status: "propuesta",
+    status: "demo",
     impact: 4,
     effort: 3,
     category: "visual",
     summary: "Radial blur screen-space desde la posición proyectada del sol, enmascarado por el depth de la Tierra.",
     detail:
-      "La geometría ideal ya existe (sol exacto de SolarPosition + oclusora). Efecto 'cine' más barato con más impacto en escenas de terminador. El plan visual del repo (Fase 4) ya lo contempla para lens flare.",
-    port: "Pase extra tras el composite: 12 taps radiales con máscara del depth buffer ya existente.",
+      "Implementado en el explorador web: pase post-ACES con 12 taps radiales y puerta CPU (lib/iono/godrays.ts + shader GOD en shaders.ts, ensamblado en IonosphereScene.tsx; capa togglable 'God rays' en LayersPanel.tsx). Espejo fiel del pase C++ (drops 143/147).",
+    port: "Ya portado: src/Utils/Godrays.h + GodraysPass en el C++ (drops 143/147).",
   },
   {
     id: "vol",
     title: "Volumen: blue-noise jitter + empty-space skipping",
-    status: "propuesta",
+    status: "parcial",
     impact: 4,
     effort: 4,
     category: "visual",
     summary: "Elimina el banding del raymarch y acelera 2-3× saltando celdas vacías.",
     detail:
-      "VolumeRenderer.cpp:66 usa paso fijo sin jitter (banding visible en el limbo) y recorre celdas vacías. Un offset R2/blue-noise por píxel+frame + un mip de máximos permite 256 pasos solo donde hay densidad.",
-    port: "Pasar una textura blue-noise 64×64 + mip de máximos del R8; el bucle ya tiene early-exit.",
+      "Jitter IGN (Jimenez 2014) del punto de entrada implementado y cableado en el march web (lib/iono/volumeJitter.ts, entryOffset en volumeMarch.ts:133); early-outs de alfa 0.98/0.001 activos. El empty-space skipping con mip de máximos del R8 no existe ni aquí ni en el C++.",
+    port:
+      "Pasar una textura blue-noise 64×64 + mip de máximos del R8; el bucle ya tiene early-exit.",
+    missing: "empty-space skipping (mip de máximos por celda); jitter y early-outs ya aplicados",
   },
   {
     id: "shadow",
     title: "Sombra de la Tierra sobre el volumen ionosférico",
-    status: "propuesta",
+    status: "demo",
     impact: 5,
     effort: 2,
     category: "visual",
     summary: "Test rayo-esfera por muestra (2-3 ops): la sombra del planeta se arrastra por la F-region en replay.",
     detail:
-      "Barato y espectacular: en el raymarch, si el segmento muestra→sol cruza la esfera interior, extinguir emisión. Visualiza el crepúsculo ionosférico real (la F-region tarda ~1 h en decaer tras el atardecer).",
-    port: "VolumeRenderer.cpp: dentro del loop de acumulación, igual que el lightOD de la atmósfera web.",
+      "Implementado: shadowed() (lib/iono/volumeShadow.ts) evalúa rayo-esfera por muestra y se aplica en el march (volumeMarch.ts:144 extingue la emisión); tests certificados en volumeShadow.test.ts. Visualiza el crepúsculo ionosférico real (la F-region tarda ~1 h en decaer tras el atardecer).",
+    port: "Ya portado: src/Utils/VolumeShadow.h (drop 133) dentro del raymarch C++.",
   },
   {
     id: "glow",
     title: "Airglow cromático en el shell (557.7/630 nm)",
-    status: "aplazada",
+    status: "parcial",
     impact: 3,
     effort: 2,
     category: "visual",
     summary: "Gradiente verde-rojo por altura en el limbo nocturno del shell, estilo fotográfico ISS.",
     detail:
-      "En vez de color=colormap puro, añadir término de single-scattering ficticio hacia el sol modulado por densidad — el mapa de datos se vuelve 'fotográfico' sin tocar evalNeTotal (respeta la regla del plan del repo).",
-    port: "IonosondeLayer/GridLayer shader: mezclar término airglow según vH (altura) en el hemisferio nocturno.",
+      "Existe un toque sutil de airglow en el shell: término verde 557.7 nm modulado por fresnel y noche en el shader del shell (shaders.ts, línea del comentario 'toque airglow en el limbo nocturno'). Falta el gradiente rojo 630 nm por altura y el single-scattering ficticio modulado por densidad del alcance completo.",
+    port:
+      "IonosondeLayer/GridLayer shader: mezclar término airglow según vH (altura) en el hemisferio nocturno.",
+    missing: "gradiente 630 nm por altura y single-scattering ficticio modulado por densidad; solo está el toque verde 557.7 nm en limbo nocturno",
   },
   {
     id: "iono",
@@ -246,14 +267,15 @@ export const IDEAS: IdeaItem[] = [
   {
     id: "alert",
     title: "Alertas de propagación configurables",
-    status: "propuesta",
+    status: "parcial",
     impact: 4,
     effort: 2,
     category: "ux",
     summary: "Umbrales Kp≥5, Bz<−10, X-ray≥M, caída MUF>20% vs mediana 24 h → toast + registro + sonido.",
     detail:
-      "Los datos ya llegan (NoaaAdapter/SolarWind). Un pequeño motor de reglas + cola de eventos en el worker publicaría bundles 'alert' que la UI consume. En web: mismo patrón con Server-Sent Events o polling.",
-    port: "fetchWorker() ya centraliza los datos: evaluar reglas al publicar cada bundle.",
+      "Motor y panel en vivo: AlertEngine (lib/iono/alerts.ts) con umbrales nombrados fijos (KP_RED=5, BZ_RED=−10, XRAY rank M, MUF_RED_DROP=20%), rojo tras 2 muestras, mediana MUF 24 h y OFF honesto; evaluado al publicar datos en page.tsx y mostrado en el panel CLIMA ESPACIAL (ALERTAS Kp/Bz/X-ray/MUF). Los umbrales no son configurables desde la UI y faltan toast y sonido. Espejo del motor C++ (drop 139).",
+    port: "Ya portado: src/Data/Alerts.h (drop 139); fetchWorker() evalúa reglas al publicar cada bundle.",
+    missing: "umbrales configurables en UI, toast y sonido; motor y panel de alertas ya funcionan",
   },
   {
     id: "pred",
@@ -270,29 +292,32 @@ export const IDEAS: IdeaItem[] = [
   {
     id: "export",
     title: "Exportación de datos y video del replay",
-    status: "propuesta",
+    status: "parcial",
     impact: 3,
     effort: 2,
     category: "ux",
     summary: "CSV de cualquier variable del grid con timestamp + turntable PNG/video del cine-mode.",
     detail:
-      "Útil para docencia e informes. El FBO está a un glReadPixels de un PNG; el CSV son los grids que ya viven en memoria.",
+      "PNG del canvas y CSV del último grid foF2 implementados con la tecla E (IonosphereScene.tsx: captura del frame + gridCsv; nombres y %.9g espejo del Exporter C++, lib/iono/export.ts con tests). El export de vídeo del replay (turntable/cine) no existe.",
     port: "Pase de captura al terminar el composite + dump de GridData en el Timeline.",
+    missing: "export de vídeo del replay (turntable/cine); PNG y CSV ya funcionan con la tecla E",
   },
   {
     id: "tour",
     title: "Tour didáctico + localización ES/EN",
-    status: "propuesta",
+    status: "demo",
     impact: 4,
     effort: 2,
     category: "ux",
     summary: "Secuencia guiada: terminador → anomalía ecuatorial → aurora → tormenta, con textos por paso.",
     detail:
-      "Los tooltips son excelentes pero solo en inglés y no hay narrativa. Un 'tour' con keyframes de cámara + overlays de texto convierte la herramienta en material docente autocontenido.",
-    port: "App.cpp: cola de (camRY, camDist, texto, condición) avanzada por timer; i18n con tabla de strings.",
+      "Implementado: cola de keyframes (lib/iono/tour.ts, 4 tramos/44 s con textos ES/EN) + overlay HTML con progreso, cambio ES/EN y cierre (page.tsx; entrada por botón 'Tour guiado' o tecla T). La cámara la mueve IonosphereScene siguiendo la cola.",
+    port: "Ya portado: src/Utils/Tour.h (drop 137) con la cola de keyframes.",
   },
 ];
 
+/** Hallazgos de la revisión C++: SNAPSHOT histórico (REVIEW_SNAPSHOT),
+ *  no el estado actual del explorador web. */
 export const FINDINGS = [
   {
     title: "Bugs de alto valor detectados",
@@ -317,6 +342,8 @@ export const FINDINGS = [
   },
 ];
 
+/** Fuentes de datos: estado verificado en REVIEW_SNAPSHOT (histórico del
+ *  sandbox de la revisión), no una comprobación en vivo de hoy. */
 export const DATA_SOURCES_STATUS = [
   { name: "NOAA Kp 1-min", ok: true, note: "planetary_k_index_1m.json · verificado en vivo" },
   { name: "NOAA OVATION aurora", ok: true, note: "924 KB por refresco, reducido a ~2 k celdas" },
@@ -329,5 +356,5 @@ export const DATA_SOURCES_STATUS = [
   { name: "SDO imágenes", ok: true, note: "HMIIF + AIA 304/193 (512 px, ~15 min)" },
   { name: "NOAA GloTEC (TEC)", ok: false, note: "índice desactualizado ~1 mes y frames HTTP 202 — usar como secundario" },
   { name: "D-RAP (absorción D)", ok: false, note: "JSON público retirado/404 — se calcula con modelo Sauer-Wilkinson + X-ray" },
-  { name: "alerts.json / noaa-scales.json", ok: false, note: "404 intermitente hoy — escalas se derivan de Kp localmente" },
+  { name: "alerts.json / noaa-scales.json", ok: false, note: "404 intermitente en el snapshot — escalas se derivan de Kp localmente" },
 ];

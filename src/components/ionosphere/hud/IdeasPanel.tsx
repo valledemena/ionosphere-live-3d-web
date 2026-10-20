@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { X, FlaskConical, Bug, Database, Lightbulb, ChevronRight } from "lucide-react";
-import { IDEAS, FINDINGS, DATA_SOURCES_STATUS } from "../ideasData";
+import { IDEAS, FINDINGS, DATA_SOURCES_STATUS, countIdeasByStatus, REVIEW_SNAPSHOT } from "../ideasData";
 
 const CAT_LABEL: Record<string, string> = {
   visual: "Visual",
@@ -24,7 +24,9 @@ export default function IdeasPanel({ open, onClose }: { open: boolean; onClose: 
   const [tab, setTab] = useState<"ideas" | "hallazgos" | "fuentes">("ideas");
   if (!open) return null;
 
+  const counts = countIdeasByStatus(IDEAS);
   const demos = IDEAS.filter((i) => i.status === "demo");
+  const parciales = IDEAS.filter((i) => i.status === "parcial");
   const propuestas = IDEAS.filter((i) => i.status === "propuesta");
   const aplazadas = IDEAS.filter((i) => i.status === "aplazada");
 
@@ -42,7 +44,7 @@ export default function IdeasPanel({ open, onClose }: { open: boolean; onClose: 
               Exploración de ideas y evaluación
             </h2>
             <p className="text-[11px] text-slate-500 mt-0.5">
-              Revisión del repositorio C++ · 10 ideas demostradas aquí · 7 propuestas · 4 aplazadas (fuera de paridad)
+              Auditoría src/ drop 350 · {IDEAS.length} ideas · {counts.demo} demo · {counts.parcial} {counts.parcial === 1 ? "parcial" : "parciales"} · {counts.propuesta} {counts.propuesta === 1 ? "propuesta" : "propuestas"} · {counts.aplazada} {counts.aplazada === 1 ? "aplazada" : "aplazadas"}
             </p>
           </div>
           <button onClick={onClose} className="text-slate-400 hover:text-slate-100 transition-colors p-1.5">
@@ -80,6 +82,14 @@ export default function IdeasPanel({ open, onClose }: { open: boolean; onClose: 
               {demos.map((idea) => (
                 <IdeaCard key={idea.id} idea={idea} />
               ))}
+              {parciales.length > 0 && (
+                <>
+                  <SectionTitle>Parciales (con lo que falta)</SectionTitle>
+                  {parciales.map((idea) => (
+                    <IdeaCard key={idea.id} idea={idea} />
+                  ))}
+                </>
+              )}
               <SectionTitle>Propuestas para la versión C++/OpenGL</SectionTitle>
               {propuestas.map((idea) => (
                 <IdeaCard key={idea.id} idea={idea} />
@@ -93,6 +103,9 @@ export default function IdeasPanel({ open, onClose }: { open: boolean; onClose: 
 
           {tab === "hallazgos" && (
             <>
+              <p className="text-[11px] text-slate-500 mb-3">
+                Snapshot de la revisión C++ ({REVIEW_SNAPSHOT}) — no describe el estado actual del explorador web.
+              </p>
               {FINDINGS.map((f) => (
                 <div key={f.title} className="mb-5">
                   <SectionTitle>{f.title}</SectionTitle>
@@ -120,7 +133,7 @@ export default function IdeasPanel({ open, onClose }: { open: boolean; onClose: 
 
           {tab === "fuentes" && (
             <>
-              <SectionTitle>Estado verificado desde el sandbox (hoy)</SectionTitle>
+              <SectionTitle>Snapshot de la revisión/fuentes ({REVIEW_SNAPSHOT})</SectionTitle>
               <div className="space-y-1.5">
                 {DATA_SOURCES_STATUS.map((s) => (
                   <div
@@ -171,12 +184,14 @@ function IdeaCard({ idea }: { idea: (typeof IDEAS)[number] }) {
           className={`text-[9px] uppercase tracking-wider px-1.5 py-0.5 rounded ring-1 shrink-0 ${
             idea.status === "demo"
               ? "bg-emerald-500/15 text-emerald-300 ring-emerald-400/30"
-              : idea.status === "aplazada"
-                ? "bg-amber-500/15 text-amber-300 ring-amber-400/30"
-                : "bg-slate-500/15 text-slate-400 ring-slate-400/20"
+              : idea.status === "parcial"
+                ? "bg-cyan-500/15 text-cyan-300 ring-cyan-400/30"
+                : idea.status === "aplazada"
+                  ? "bg-amber-500/15 text-amber-300 ring-amber-400/30"
+                  : "bg-slate-500/15 text-slate-400 ring-slate-400/20"
           }`}
         >
-          {idea.status === "demo" ? "demo" : idea.status === "aplazada" ? "aplazada" : "propuesta"}
+          {idea.status}
         </span>
         <span className="text-xs text-slate-100 font-medium flex-1 leading-snug">{idea.title}</span>
         <span className={`text-[9px] uppercase px-1.5 py-0.5 rounded ring-1 shrink-0 ${CAT_COLOR[idea.category]}`}>
@@ -205,6 +220,12 @@ function IdeaCard({ idea }: { idea: (typeof IDEAS)[number] }) {
         <div className="px-3.5 pb-3 pt-0.5 border-t border-white/5">
           <p className="text-[11px] text-slate-300 leading-relaxed mb-2">{idea.summary}</p>
           <p className="text-[11px] text-slate-400 leading-relaxed mb-2">{idea.detail}</p>
+          {idea.missing && (
+            <div className="rounded-lg bg-cyan-500/8 ring-1 ring-cyan-400/15 px-2.5 py-1.5 mb-2">
+              <span className="text-[9px] uppercase tracking-wider text-cyan-300/80">Falta</span>
+              <p className="text-[11px] text-slate-300 leading-relaxed mt-0.5">{idea.missing}</p>
+            </div>
+          )}
           {idea.port && (
             <div className="rounded-lg bg-cyan-500/8 ring-1 ring-cyan-400/15 px-2.5 py-1.5">
               <span className="text-[9px] uppercase tracking-wider text-cyan-300/80">Port al C++</span>

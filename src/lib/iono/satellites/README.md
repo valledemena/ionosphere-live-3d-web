@@ -1,10 +1,11 @@
-# Shell data layer — live TLE catalog (drop 317, F2b #10)
+# Data + rendering layer — live TLE catalog (drop 317, F2b #10)
 
-This directory is the **shell data layer** of the West Ford feature (verdicts
-312 §Q1/§Q3, 316 §4): it acquires the 2026 object catalog that the "eco 2026"
-mode will render (engine shareable with #23 — catalogue §E of 251). UI /
-rendering / the 1963 ring land in later drops; this drop is the live-fetch
-wiring plus the honest degradation chain.
+This directory is the **data + rendering layer** of the West Ford feature
+(verdicts 312 §Q1/§Q3, 316 §4; ruling 320): the data half (live-fetch wiring
+plus the honest degradation chain) landed in drop 317, and the rendering half
+(sky/scheduler/panel, drop 321; the declared 1963 ring) is implemented here and
+rendered by `IonosphereScene.tsx` (eco orbital loop, ring points, and the
+`showSatellites`/`showRing1963` toggles).
 
 Route: `GET /api/satellites` (route logic in `src/app/api/satellites/route.ts`,
 pure chain in `catalog.ts` + TU in `catalog.test.ts`).
