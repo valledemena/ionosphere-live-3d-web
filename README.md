@@ -63,12 +63,16 @@ npm test        # vitest run (borra .next antes si existe un build)
 npm run lint    # eslint .
 ```
 
+Para otro puerto/host: `$env:PORT='3025'; npm run start` (PowerShell) o
+`PORT=3025 npm run start` (bash). `scripts/start.mjs` fija `NODE_ENV=production`
+y los defaults `3011`/`127.0.0.1`.
+
 ## Entorno y secretos
 
 - **No se necesitan API keys**: todas las fuentes son públicas.
-- `.env` no está versionado (`.gitignore` cubre `.env` y `.env.*`, preservando
-  un futuro `.env.example`). La aplicación solo lee `NODE_ENV`; el servidor
-  standalone además acepta `PORT`/`HOSTNAME`.
+- `.env` no está versionado (`.gitignore` cubre `.env` y `.env.*`) y no hacen
+  falta ficheros `.env`: la aplicación solo lee `NODE_ENV`; en runtime el
+  servidor standalone toma `PORT`/`HOSTNAME` solo del entorno (no carga `.env`).
 
 ## Assets (texturas)
 

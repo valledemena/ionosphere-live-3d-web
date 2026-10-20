@@ -11,8 +11,6 @@ dist/
 
 # logs
 *.log
-dev.log
-server.log
 
 # typescript
 tsconfig.tsbuildinfo
