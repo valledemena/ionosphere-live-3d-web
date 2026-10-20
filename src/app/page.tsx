@@ -297,7 +297,7 @@ export default function Home() {
       });
     }, 500);
     return () => clearInterval(t);
-  }, [settings.timeMode, settings.replayPlaying, settings.replaySpeed, settings.replayLoop, settings.replayMinutes]);
+  }, [settings.timeMode, settings.replayPlaying, settings.replaySpeed, settings.replayLoop, settings.replayMinutes, onSettingsChange]);
 
   const effSec = useMemo(
     () => (nowMs - (settings.timeMode === "replay" ? settings.replayMinutes * 60_000 : 0)) / 1000,

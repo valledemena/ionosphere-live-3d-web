@@ -59,6 +59,7 @@ export default function FadePanel({
       )}
       {/* O2: D-RAP as validation reference (declared). */}
       <a href={DRAP_LINK} target="_blank" rel="noreferrer" className="block mt-1.5">
+        {/* eslint-disable-next-line @next/next/no-img-element -- imagen remota viva; sin optimizador a propósito */}
         <img
           src={DRAP_LATEST}
           alt="D-RAP absorption map (NOAA validation reference)"

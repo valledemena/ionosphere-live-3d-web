@@ -1655,6 +1655,7 @@ export default function IonosphereScene(props: Props) {
         so.rings = nb.group;
       }
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- props leídas vía propsRef (ref-latest); setup único, sin re-init al cambiar props
   }, [props.ionosondes, props.spaceWeather?.f107.now, props.settings.timeMode, props.settings.replayMinutes]);
 
   // ───────── W-4 B1 slice QTH-DX: cortina Ne(h) ─────────
@@ -1742,6 +1743,7 @@ export default function IonosphereScene(props: Props) {
       ? { latA: center.lat, lonA: center.lon, latB: center.lat, lonB: center.lon }
       : { latA: ep.latA, lonA: ep.lonA, latB: ep.latB, lonB: ep.lonB };
     props.callbacks.onSlicePeak?.(sliceLabel(codeA, codeB, grid.peakLog, coords));
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- callbacks vía propsRef (ref-latest); setup único, sin re-init al cambiar props
   }, [props.ionosondes, props.spaceWeather?.f107.now, props.settings.timeMode, props.settings.replayMinutes,
     props.settings.showSlice, props.settings.sliceSrc, props.settings.sliceLatA, props.settings.sliceLonA,
     props.settings.sliceLatB, props.settings.sliceLonB, props.settings.exaggeration, props.txCode, props.rxCode]);
@@ -1761,6 +1763,7 @@ export default function IonosphereScene(props: Props) {
     so.scene.add(au.mesh);
     so.auroraObj = au;
     au.mesh.visible = props.settings.showAurora;
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- visibilidad sincronizada al montar; rebuild solo con props.aurora
   }, [props.aurora]);
 
   // ───────── enlace HF (TX/RX/frecuencia/grid) ─────────
@@ -1810,6 +1813,7 @@ export default function IonosphereScene(props: Props) {
     so.scene.add(tube.mesh);
     tube.mesh.renderOrder = 5;
     so.linkObj = tube;
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- props leídas vía propsRef (ref-latest); setup único, sin re-init al cambiar props
   }, [props.txCode, props.rxCode, props.linkFreq, props.ionosondes, props.settings.exaggeration, props.settings.timeMode, props.settings.replayMinutes]);
 
   return <div ref={mountRef} className="absolute inset-0" aria-label="Escena 3D del globo ionosférico" />;

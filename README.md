@@ -91,12 +91,12 @@ contrario carga el fallback.
 
 ## Gates del proyecto
 
-| Gate | Comando | Estado (drop-337) |
+| Gate | Comando | Estado (drop-344) |
 | --- | --- | --- |
-| ESLint | `npm run lint` | 16 errores conocidos (deuda `react-hooks/*`), 18 warnings |
+| ESLint | `npm run lint` | 0 errores, 0 warnings |
 | TypeScript | `npx tsc --noEmit` | 0 |
 | Tests | `npm test` | 399/399 (43 ficheros) |
-| Build | `npx next build` | 0 |
+| Build | `npm run build` | 0 (next build + postbuild portable) |
 
 ## Flujo de desarrollo (drops)
 

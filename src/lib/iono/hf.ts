@@ -63,7 +63,7 @@ export function computeLink(
   const mid = slerpLatLon(a, b, 0.5);
   const hVirtual = Math.max(140, Math.min(420, hmF2At(mid)));
 
-  const nHops = Math.max(1, hopCountForDistance(distanceKm, hVirtual));
+  const nHops = Math.max(1, hopCountForDistance(distanceKm));
   const perHopKm = distanceKm / nHops;
 
   // elevación necesaria para el salto con esa altura virtual

@@ -242,7 +242,7 @@ async function fetchStation(code: string, now: Date): Promise<StationData | null
 }
 
 /** kc2g FAILOVER-ONLY (FASE A): 1 GET por ciclo, solo con ronda fallida. */
-async function fetchKc2g(_now: Date): Promise<Kc2gStation[]> {
+async function fetchKc2g(): Promise<Kc2gStation[]> {
   try {
     const ctrl = new AbortController();
     const timer = setTimeout(() => ctrl.abort(), 12000);
@@ -387,7 +387,7 @@ export async function GET(request: Request) {
   let kc2gCount = 0;
   let stations = live;
   if (!wantFull && live.length === 0) {
-    const kc = await fetchKc2g(now);
+    const kc = await fetchKc2g();
     const fresh24 = filterFresh(kc, now.getTime(), 24 * 3600_000);
     kc2gCount = fresh24.length;
     stations = fresh24

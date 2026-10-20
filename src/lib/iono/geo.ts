@@ -105,7 +105,7 @@ export function elevationForHop(targetKm: number, hVirtualKm: number): number | 
 }
 
 /** Número óptimo de saltos para una distancia total (apunta a ~3000 km/salto F2) */
-export function hopCountForDistance(totalKm: number, _hVirtualKm: number): number {
+export function hopCountForDistance(totalKm: number): number {
   let best = 1;
   let bestErr = Infinity;
   for (let n = 1; n <= 6; n++) {

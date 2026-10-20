@@ -155,7 +155,7 @@ function EventBody({
       </div>
 
       {/* O1.4: textura LASCO del momento, con fallback honesto */}
-      {lascoOk ? (
+      {lascoOk ? ( // eslint-disable-next-line @next/next/no-img-element -- imagen remota viva; sin optimizador a propósito
         <img
           src={LASCO_C2}
           alt="LASCO C2 en tiempo real (SOHO)"

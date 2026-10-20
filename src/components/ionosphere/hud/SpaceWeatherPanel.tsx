@@ -120,6 +120,7 @@ export default function SpaceWeatherPanel({
       >
         <div className="relative w-16 h-16 shrink-0 rounded-full overflow-hidden ring-1 ring-amber-200/30 group-hover:ring-amber-200/60 transition">
           
+          {/* eslint-disable-next-line @next/next/no-img-element -- imagen remota viva; sin optimizador a propósito */}
           <img
             src={`/api/solar-image?type=${solarImg ? "hmi" : "aia304"}`}
             alt="Disco solar en tiempo real (SDO)"

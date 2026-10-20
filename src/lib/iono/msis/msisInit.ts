@@ -42,7 +42,6 @@ import {
   CSFX,
   NSFX,
   NSFXMOD,
-  NMAG,
   NUT,
   CSFXMOD,
   CMAG,
@@ -567,7 +566,7 @@ export function msisinit(state: MsisState, opts: MsisInitOptions): void {
   } else {
     state.massflag.fill(false);
   }
-  for (let i = 1; i <= 10; i++) state.massflag[i] && (state.specflag[i] = true);
+  for (let i = 1; i <= 10; i++) if (state.massflag[i]) state.specflag[i] = true;
   for (let i = 1; i <= 10; i++) state.masswgt[i] = 0;
   for (let i = 1; i <= 10; i++) if (state.massflag[i]) state.masswgt[i] = 1;
   state.masswgt[1] = 0;

@@ -1037,10 +1037,10 @@ export function sgp4init(q: Sgp4InitIn, satrec: ElsetRec): boolean {
       const ss1 = ds.ss1, ss2 = ds.ss2, ss3 = ds.ss3, ss4 = ds.ss4, ss5 = ds.ss5;
       const sz1 = ds.sz1, sz2 = ds.sz2, sz3 = ds.sz3;
       void sz2;
-      const sz11 = ds.sz11, sz12 = ds.sz12, sz13 = ds.sz13;
+      const sz11 = ds.sz11, sz13 = ds.sz13;
       const sz21 = ds.sz21, sz22 = ds.sz22, sz23 = ds.sz23;
       void sz22;
-      const sz31 = ds.sz31, sz32 = ds.sz32, sz33 = ds.sz33;
+      const sz31 = ds.sz31, sz33 = ds.sz33;
       satrec.xgh2 = ds.xgh2; satrec.xgh3 = ds.xgh3; satrec.xgh4 = ds.xgh4;
       satrec.xh2 = ds.xh2; satrec.xh3 = ds.xh3;
       satrec.xi2 = ds.xi2; satrec.xi3 = ds.xi3;
@@ -1049,10 +1049,10 @@ export function sgp4init(q: Sgp4InitIn, satrec: ElsetRec): boolean {
       void nm;
       const z1 = ds.z1, z2 = ds.z2, z3 = ds.z3;
       void z2;
-      const z11 = ds.z11, z12 = ds.z12, z13 = ds.z13;
+      const z11 = ds.z11, z13 = ds.z13;
       const z21 = ds.z21, z22 = ds.z22, z23 = ds.z23;
       void z22;
-      const z31 = ds.z31, z32 = ds.z32, z33 = ds.z33;
+      const z31 = ds.z31, z33 = ds.z33;
       satrec.zmol = ds.zmol; satrec.zmos = ds.zmos;
 
       const dp = dpper(
@@ -1212,8 +1212,6 @@ export function sgp4(satrec: ElsetRec, tsince: number, r: number[], v: number[])
   if (em < 1.0e-6) em = 1.0e-6;
   mm = mm + satrec.noUnkozai * templ;
   let xlm = mm + argpm + nodem;
-  const emsq = em * em;
-  const temp = 1.0 - emsq;
 
   nodem = fmod2(nodem, TWOPI);
   argpm = fmod2(argpm, TWOPI);
