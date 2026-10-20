@@ -67,6 +67,10 @@ Para otro puerto/host: `$env:PORT='3025'; npm run start` (PowerShell) o
 `PORT=3025 npm run start` (bash). `scripts/start.mjs` fija `NODE_ENV=production`
 y los defaults `3011`/`127.0.0.1`.
 
+El standalone puede tardar ~5-7 s en aceptar conexiones tras imprimir "Ready";
+un `curl` inmediato puede devolver 000/ECONNREFUSED. Los probes y la CI deben
+reintentar durante unos segundos antes de declarar fallo.
+
 ## Entorno y secretos
 
 - **No se necesitan API keys**: todas las fuentes son públicas.

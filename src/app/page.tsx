@@ -377,11 +377,11 @@ export default function Home() {
               <span className="text-[9px] bg-cyan-400/20 rounded-full px-1.5 py-0.5">21</span>
             </button>
             <a
-              href="https://github.com/davidlopezsalvador/ionosphere-live-3d"
+              href="https://github.com/davidlopezsalvador/ionosphere-web"
               target="_blank"
               rel="noreferrer"
               className="text-slate-500 hover:text-slate-200 transition-colors p-2 rounded-xl hover:bg-white/5"
-              title="Repositorio original (C++/OpenGL)"
+              title="Repositorio del proyecto (web)"
             >
               <Github size={16} />
             </a>
