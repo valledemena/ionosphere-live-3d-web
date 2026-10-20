@@ -43,7 +43,10 @@ export type V3 = [number, number, number];
 export interface MarchOpts {
   innerR: number;
   outerR: number;
-  /** Direccion solar UNITARIA (marco del motor, como u_sunDir). */
+  /** Direccion solar UNITARIA (marco ESCENA, como u_sunDir de VOL_FRAG
+   *  tras el drop 349 — el oraculo pasa getSunInfo().dir motor; la escena
+   *  usa sunDirScene). El marching es agnostico al marco: solo exige que
+   *  sunDir y las posiciones p vivan en el mismo marco. */
   sunDir: V3;
   steps?: number; // clamp 16..256 como setStepCount
   opacityScale?: number;

@@ -2,12 +2,16 @@
  * Posición solar (Meeus de baja precisión) — port de src/Utils/SolarPosition.cpp
  * Devuelve dirección unitaria del sol y punto subsolar (lat, lon).
  *
- * MARCOS (ruling 174 n1, fix coordinado 175): dir vive en el marco MOTOR
- * (token-identico a SolarPosition::getDirection, paridad <=4.6e-7); el
+ * MARCOS (ruling 174 n1, fix coordinado 175, drop 349): dir vive en el marco
+ * MOTOR (token-identico a SolarPosition::getDirection, paridad <=4.6e-7); el
  * subsolar se decodifica con la inversa MOTOR (motorToLatLon), NO con
- * vec3ToLatLon (inversa escena: daba verdad+180). uSunDir de los shaders
- * se deja INTACTO a proposito (criterio de invariancia del ruling: el fix
- * no debe cambiar el render; el alumbrado queda declarado latente).
+ * vec3ToLatLon (inversa escena: daba verdad+180). La escena Three.js
+ * (latLonToVec3, SphereGeometry, texturas) está rotada 180° en longitud
+ * respecto al motor: scene = (-motor.x, motor.y, -motor.z). Desde el drop
+ * 349 los uniforms uSunDir/godrays/sunGlow usan sunDirScene (escena); la
+ * física (buildLivePeakGrids/buildLiveVolume) sigue con getSunInfo().dir
+ * (motor). El comentario del fix 175 que dejaba el alumbrado "latente"
+ * queda superado por ese helper.
  */
 
 import { DEG, RAD } from "./geo";
@@ -70,6 +74,15 @@ export function motorToLatLon(x: number, y: number, z: number): { lat: number; l
 function normalize(v: [number, number, number]): [number, number, number] {
   const m = Math.hypot(v[0], v[1], v[2]) || 1;
   return [v[0] / m, v[1] / m, v[2] / m];
+}
+
+/** Vector solar unitario en el marco ESCENA de Three.js.
+ *  getSunInfo().dir vive en el marco motor; densidadDir y la física lo usan.
+ *  La escena (latLonToVec3, SphereGeometry, texturas) está rotada 180° en lon:
+ *  scene = (-motor.x, motor.y, -motor.z). */
+export function sunDirScene(utcSeconds: number): [number, number, number] {
+  const d = getSunInfo(utcSeconds).dir;
+  return [-d[0], d[1], -d[2]];
 }
 
 function mod(a: number, b: number): number {

@@ -1,9 +1,11 @@
 import { describe, expect, it } from "vitest";
 import {
+  newestPerSat,
   parseGlmList,
   glmStatus,
   parseNwsAlerts,
   whistlerPath,
+  type GlmGranule,
 } from "./lightning";
 import { traceConjugate } from "./magnetosphere";
 
@@ -123,5 +125,39 @@ describe("whistlerPath (linea de campo REAL de B(r))", () => {
     const c = traceConjugate(33.9, -99.5);
     expect(c.L).toBeGreaterThan(1);
     expect(c.L).toBeLessThan(3);
+  });
+});
+
+// TU drop 349 (C): recorte por satelite — ambos GLM sobreviven al recorte
+// y el primero de cada lista es el mas reciente (bug del slice(0,40)
+// global que dejaba el panel sin G18).
+describe("newestPerSat (drop 349: G18 sobrevive)", () => {
+  const g = (sat: string, start: number): GlmGranule => ({ sat, start, end: start + 20_000, size: 1 });
+
+  it("ambos satelites sobreviven y el primero de cada uno es el mas reciente", () => {
+    const g19 = [g("G19", 300), g("G19", 200), g("G19", 100)];
+    const g18 = [g("G18", 280), g("G18", 180)];
+    const out = newestPerSat(g19, g18);
+    expect(out.filter((x) => x.sat === "G19").length).toBe(3);
+    expect(out.filter((x) => x.sat === "G18").length).toBe(2);
+    expect(out[0]).toMatchObject({ sat: "G19", start: 300 });
+    expect(out[3]).toMatchObject({ sat: "G18", start: 280 });
+  });
+
+  it("recorta a perSat por satelite (no global)", () => {
+    const g19 = Array.from({ length: 50 }, (_, i) => g("G19", 1000 - i));
+    const g18 = Array.from({ length: 50 }, (_, i) => g("G18", 900 - i));
+    const out = newestPerSat(g19, g18, 40);
+    expect(out.filter((x) => x.sat === "G19").length).toBe(40);
+    expect(out.filter((x) => x.sat === "G18").length).toBe(40);
+    // el global slice(0,40) antiguo dejaria G18 con 0
+    const legacy = [...g19, ...g18].sort((a, b) => b.start - a.start).slice(0, 40);
+    expect(legacy.filter((x) => x.sat === "G18").length).toBe(0);
+  });
+
+  it("G18 vacio no rompe", () => {
+    const out = newestPerSat([g("G19", 50)], []);
+    expect(out).toHaveLength(1);
+    expect(out[0].sat).toBe("G19");
   });
 });

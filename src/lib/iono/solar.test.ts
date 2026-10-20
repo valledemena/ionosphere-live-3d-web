@@ -7,7 +7,9 @@
  */
 import { describe, expect, it } from "vitest";
 import { densityDir } from "./densityVolume";
-import { getSunInfo, motorToLatLon, solarZenithDeg } from "./solar";
+import { getSunInfo, motorToLatLon, solarZenithDeg, sunDirScene } from "./solar";
+import { latLonToVec3 } from "./geo";
+import { midnightLon } from "./refshells";
 
 const EPOCH_12Z = Date.UTC(2026, 9, 7, 12, 0, 0) / 1000; // 1791374400
 
@@ -49,5 +51,37 @@ describe("solar: marco motor", () => {
   it("mediodia del modelo del lado verdadero (cenit ~0 en subsolar)", () => {
     const s = getSunInfo(EPOCH_12Z);
     expect(solarZenithDeg(s.subsolarLat, s.subsolarLon, EPOCH_12Z)).toBeLessThan(5);
+  });
+});
+
+describe("solar: marco escena (drop 349)", () => {
+  const normLon = (lon: number) => (((lon + 180) % 360) + 360) % 360 - 180;
+
+  it("subsolar iluminado: dot(sunDirScene, latLonToVec3(subsolar)) > 0.999", () => {
+    const s = getSunInfo(EPOCH_12Z);
+    const d = sunDirScene(EPOCH_12Z);
+    const p = latLonToVec3(s.subsolarLat, s.subsolarLon);
+    const dot = d[0] * p[0] + d[1] * p[1] + d[2] * p[2];
+    expect(dot).toBeGreaterThan(0.999);
+  });
+
+  it("antipoda subsolar: dot < -0.999", () => {
+    const s = getSunInfo(EPOCH_12Z);
+    const d = sunDirScene(EPOCH_12Z);
+    const p = latLonToVec3(-s.subsolarLat, normLon(s.subsolarLon + 180));
+    const dot = d[0] * p[0] + d[1] * p[1] + d[2] * p[2];
+    expect(dot).toBeLessThan(-0.999);
+  });
+
+  it("sunDirScene unitario", () => {
+    const d = sunDirScene(EPOCH_12Z);
+    expect(Math.hypot(d[0], d[1], d[2])).toBeCloseTo(1, 12);
+  });
+
+  it("midnightLon(sunDirScene) == subsolarLon + 180 normalizado", () => {
+    const s = getSunInfo(EPOCH_12Z);
+    const d = sunDirScene(EPOCH_12Z);
+    const m = midnightLon(d[0], d[1], d[2]);
+    expect(m).toBeCloseTo(normLon(s.subsolarLon + 180), 6);
   });
 });

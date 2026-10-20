@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { parseGlmList, parseNwsAlerts } from "@/lib/iono/lightning";
+import { newestPerSat, parseGlmList, parseNwsAlerts } from "@/lib/iono/lightning";
 
 /**
  * W-4 F2a #8: GLM granules (AWS Open Data, no auth) + NWS storm warnings.
@@ -9,6 +9,9 @@ import { parseGlmList, parseNwsAlerts } from "@/lib/iono/lightning";
  *   (GOES-16 retirado: solo hasta 2025; operativos G19 Este + G18 Oeste)
  *   https://api.weather.gov/alerts/active?event=Severe%20Thunderstorm%20Warning
  * Cache 5 min (cortesia; los granulos ciclan cada 20 s).
+ * Drop 349: max-keys=400 (≈180 granulos/hora a 20 s; 400 cubre la hora con
+ * margen). Con 40, S3 devuelve las 40 claves lexicográficamente MÁS
+ * ANTIGUAS de la hora y G19 envejece hasta ~47 min al final de la hora.
  */
 
 export const revalidate = 0;
@@ -60,12 +63,12 @@ export async function GET() {
   const { day, hour } = dayHour(new Date(now));
   const [g19, g18, nws] = await Promise.all([
     fetchText(
-      `https://noaa-goes19.s3.amazonaws.com/?list-type=2&prefix=GLM-L2-LCFA/2026/${day}/${hour}/&max-keys=40`,
+      `https://noaa-goes19.s3.amazonaws.com/?list-type=2&prefix=GLM-L2-LCFA/2026/${day}/${hour}/&max-keys=400`,
       20000,
       UA
     ),
     fetchText(
-      `https://noaa-goes18.s3.amazonaws.com/?list-type=2&prefix=GLM-L2-LCFA/2026/${day}/${hour}/&max-keys=40`,
+      `https://noaa-goes18.s3.amazonaws.com/?list-type=2&prefix=GLM-L2-LCFA/2026/${day}/${hour}/&max-keys=400`,
       20000,
       UA
     ),
@@ -76,10 +79,16 @@ export async function GET() {
     ),
   ]);
   // Sin red -> estados honestos vacios (O5.4: jamas flashes falsos).
-  const granules = [...parseGlmList(g19 ?? "", "G19"), ...parseGlmList(g18 ?? "", "G18")];
+  // Drop 349: parse separado + recorte por satelite (newestPerSat) — el
+  // slice(0,40) global sobre [G19…, G18…] dejaba el panel sin G18.
+  const granules = newestPerSat(
+    parseGlmList(g19 ?? "", "G19"),
+    parseGlmList(g18 ?? "", "G18"),
+    40
+  );
   const storms = parseNwsAlerts(nws, now);
   const payload = {
-    granules: granules.slice(0, 40).map((g) => ({
+    granules: granules.map((g) => ({
       sat: g.sat,
       start: g.start,
       end: g.end,

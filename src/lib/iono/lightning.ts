@@ -62,6 +62,16 @@ export function parseGlmList(xml: string, sat: string): GlmGranule[] {
   return out.sort((a, b) => b.start - a.start);
 }
 
+/** Recorte honesto por satélite (drop 349, bug "G18 no data"): parseGlmList
+ *  ordena desc por start; tomar los N más recientes DE CADA satélite evita
+ *  que un slice(0,N) global sobre la concat [G19…, G18…] elimine G18 entero
+ *  (G19 siempre es más reciente y acapara el recorte global). */
+export function newestPerSat(g19: GlmGranule[], g18: GlmGranule[], perSat = 40): GlmGranule[] {
+  const cut = (list: GlmGranule[]) =>
+    [...list].sort((a, b) => b.start - a.start).slice(0, perSat);
+  return [...cut(g19), ...cut(g18)];
+}
+
 export interface GlmStatus {
   sat: string;
   fresh: boolean; // ultimo granulo < 10 min (produccion continua 20 s)

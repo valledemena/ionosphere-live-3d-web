@@ -628,10 +628,15 @@ void main() {
 
     vec3 n = p / max(r, 1e-6);
     float lat = asin(clamp(n.y, -1.0, 1.0));
-    float lon = 3.14159265 - atan(n.z, n.x);
-    if (lon > 3.14159265) lon -= 2.0 * 3.14159265;
-    if (lon < -3.14159265) lon += 2.0 * 3.14159265;
-    vec2 uv = vec2(lon / (2.0 * 3.14159265) + 0.5, lat / 3.14159265 + 0.5);
+    // Drop 349 (drape identidad del shell, ruling 174 n1): p es ESCENA;
+    // la formula anterior (PI - atan(n.z, n.x)) era el espejo MOTOR y
+    // desplazaba la textura 180 grados (antipoda), con discontinuidad en
+    // la costura (u +-0.5; lonIdx 0 = lon -180, densityVolume.ts:13-14).
+    // Mismo mapeo que IONO_VERT:233: phi = atan(z, -x); u = fract(phi/2PI).
+    // El texelFetch de iso usa el mismo uv: corregido por construccion.
+    float phi = atan(n.z, -n.x);
+    float u = fract(phi / 6.28318530718);
+    vec2 uv = vec2(u, lat / 3.14159265 + 0.5);
 
     float d = texture(u_density, vec3(uv, altNorm)).r;
     vec3 col;

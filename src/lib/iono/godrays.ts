@@ -231,9 +231,9 @@ export interface PassState {
 
 /**
  * Estado del pase por frame (P1-176): proyecta el sol visual (mismo vector
- * que el sprite: motor-consistente con uSunDir), aplica la puerta CPU y
- * devuelve el UV. El drape corregido no interviene: el pase trabaja en
- * pantalla, no en datos. Puro.
+ * que el sprite: escena-consistente con uSunDir desde el drop 349 —
+ * sunDirScene), aplica la puerta CPU y devuelve el UV. El drape corregido
+ * no interviene: el pase trabaja en pantalla, no en datos. Puro.
  */
 export function godraysPassState(
   viewProj: Mat4,

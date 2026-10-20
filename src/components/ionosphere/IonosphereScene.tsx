@@ -5,7 +5,7 @@
  * Ciclo de vida React: montaje único, actualizaciones por props, loop rAF.
  */
 
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import * as THREE from "three";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls.js";
 import { EffectComposer } from "three/examples/jsm/postprocessing/EffectComposer.js";
@@ -14,7 +14,7 @@ import { UnrealBloomPass } from "three/examples/jsm/postprocessing/UnrealBloomPa
 import { OutputPass } from "three/examples/jsm/postprocessing/OutputPass.js";
 import { ShaderPass } from "three/examples/jsm/postprocessing/ShaderPass.js";
 
-import { getSunInfo } from "@/lib/iono/solar";
+import { getSunInfo, sunDirScene } from "@/lib/iono/solar";
 import { sampleGrid, GRID_W, GRID_H, dRegionAbsorptionDb } from "@/lib/iono/ionomath";
 import { buildLivePeakGrids, buildLiveVolume } from "@/lib/iono/profileGrid";
 import { godraysPassState, mat4Mul, type Mat4 } from "@/lib/iono/godrays";
@@ -136,6 +136,11 @@ interface Props {
 export default function IonosphereScene(props: Props) {
   const mountRef = useRef<HTMLDivElement>(null);
   const propsRef = useRef(props);
+  // drop 349 (B): los effects de capas dependen de S.current, que se asigna
+  // tras el await de texturas en init(); con datos cacheados llegaban antes y
+  // los effects tempranos retornaban sin re-ejecutarse. sceneReady dispara
+  // el rebuild cuando la init termina (transición única false->true).
+  const [sceneReady, setSceneReady] = useState(false);
   useEffect(() => {
     propsRef.current = props;
   });
@@ -562,6 +567,10 @@ export default function IonosphereScene(props: Props) {
         refKey: "",
         godraysOn: false,
       };
+      // drop 349 (B): la escena ya es utilizable; los effects de capas
+      // (satélites/ionosondas/slice/aurora/HF) dependen de sceneReady para
+      // reconstruir si sus props llegaron durante el await de init.
+      setSceneReady(true);
 
       // W-4 F1: overlay de etiquetas (3 divs imperativos, fuera de React).
       {
@@ -717,8 +726,10 @@ export default function IonosphereScene(props: Props) {
           ? stations.find((s) => s.code === propsRef.current.rxCode) ?? null
           : null;
         const pinned = tx ?? rx;
-        const sun = getSunInfo((so.lastEffMs || Date.now()) / 1000);
-        const mLon = midnightLon(sun.dir[0], sun.dir[1], sun.dir[2]);
+        // drop 349: midnightLon replica la inversa ESCENA (vec3ToLatLon(−dir));
+        // recibir el vector motor desplazaba la etiqueta al meridiano subsolar.
+        const sunScene = sunDirScene((so.lastEffMs || Date.now()) / 1000);
+        const mLon = midnightLon(sunScene[0], sunScene[1], sunScene[2]);
         const camLL = vec3ToLatLon(
           so.camera.position.x, so.camera.position.y, so.camera.position.z,
         );
@@ -782,8 +793,10 @@ export default function IonosphereScene(props: Props) {
         // sol por tiempo efectivo (live o replay -- mejora: el terminador sigue al dato)
         const { settings } = propsRef.current;
         const effMs = Date.now() - (settings.timeMode === "replay" ? settings.replayMinutes * 60_000 : 0);
-        const sun = getSunInfo(effMs / 1000);
-        const sunV = new THREE.Vector3(sun.dir[0], sun.dir[1], sun.dir[2]);
+        // drop 349: sol de ESCENA para todo lo visual (uniforms, sunGlow,
+        // godrays, fadeout, magnetopausa). El motor (getSunInfo().dir) sigue
+        // siéndolo para buildLivePeakGrids/buildLiveVolume (física de datos).
+        const sunV = new THREE.Vector3(...sunDirScene(effMs / 1000));
 
         // W-4 #4: magnetosfera viva — acople Bz/v/n en el mismo frame (O4.4).
         {
@@ -1359,9 +1372,9 @@ export default function IonosphereScene(props: Props) {
         controls.update();
         // W-3 god rays (P1-177): puerta CPU + uniforms por frame con el
         // espejo (projectSun/gateSkip/rayHitsEarth). El sol es el MISMO
-        // vector del sprite (motor-consistente con uSunDir): el pase se
-        // alinea con el sol visual. Flare/xray NO entran aqui (el oraculo
-        // modula D, no el pase). Aspecto del canvas real.
+        // vector del sprite (escena-consistente con uSunDir desde el drop
+        // 349: sunDirScene): el pase se alinea con el sol visual. Flare/xray
+        // NO entran aqui (el oraculo modula D, no el pase). Aspecto del canvas real.
         const gp = S.current?.godRays;
         if (gp) {
           let show = propsRef.current.settings.showGodrays;
@@ -1527,7 +1540,7 @@ export default function IonosphereScene(props: Props) {
     points.visible = false;
     so.scene.add(points);
     so.satellites = { points, posAttr: pos, sky, frames: 0 };
-  }, [props.satellites]);
+  }, [props.satellites, sceneReady]);
 
   // ----- datos: ionosondas -> rejilla viva -> shell derivada -----
   // W-3 (P1-172): el shell ya no se alimenta de la era (buildFoF2Grid), sino
@@ -1551,11 +1564,11 @@ export default function IonosphereScene(props: Props) {
       foF2: sampleStationAt(s, effMs),
     }));
 
-    // sol en el marco del motor (ruling 174 n1, fix 175): sun.dir YA ES el
-    // vector motor del oraculo (paridad <=4.6e-7 con getDirection); se pasa
-    // directo, sin decodificar subsolar (la decodificacion escena sumaba 180
-    // y el drape lo compensaba: doble espejo cancelado en el render).
-    // uSunDir de los shaders se deja INTACTO (invariancia del ruling).
+    // sol en el marco del MOTOR (ruling 174 n1): sun.dir YA ES el vector
+    // motor del oraculo (paridad <=4.6e-7 con getDirection) y se pasa
+    // directo a buildLivePeakGrids/buildLiveVolume (física de datos, no
+    // render). Desde el drop 349 uSunDir de los shaders usa sunDirScene
+    // (escena) en el tick; aqui NO se transforma (debe seguir motor).
     const sun = getSunInfo(effMs / 1000);
     const [sunX, sunY, sunZ] = sun.dir;
     const f107 = props.spaceWeather?.f107.now ?? 110;
@@ -1655,8 +1668,8 @@ export default function IonosphereScene(props: Props) {
         so.rings = nb.group;
       }
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps -- props leídas vía propsRef (ref-latest); setup único, sin re-init al cambiar props
-  }, [props.ionosondes, props.spaceWeather?.f107.now, props.settings.timeMode, props.settings.replayMinutes]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- props leídas vía propsRef (ref-latest); sceneReady (drop 349): rebuild al terminar init
+  }, [props.ionosondes, props.spaceWeather?.f107.now, props.settings.timeMode, props.settings.replayMinutes, sceneReady]);
 
   // ───────── W-4 B1 slice QTH-DX: cortina Ne(h) ─────────
   // Espejo SliceLayer (SEG 64 x LVL 20, slerp A->B, viridis + alfa d*1.2).
@@ -1743,10 +1756,10 @@ export default function IonosphereScene(props: Props) {
       ? { latA: center.lat, lonA: center.lon, latB: center.lat, lonB: center.lon }
       : { latA: ep.latA, lonA: ep.lonA, latB: ep.latB, lonB: ep.lonB };
     props.callbacks.onSlicePeak?.(sliceLabel(codeA, codeB, grid.peakLog, coords));
-    // eslint-disable-next-line react-hooks/exhaustive-deps -- callbacks vía propsRef (ref-latest); setup único, sin re-init al cambiar props
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- callbacks vía propsRef (ref-latest); sceneReady (drop 349): rebuild al terminar init
   }, [props.ionosondes, props.spaceWeather?.f107.now, props.settings.timeMode, props.settings.replayMinutes,
     props.settings.showSlice, props.settings.sliceSrc, props.settings.sliceLatA, props.settings.sliceLonA,
-    props.settings.sliceLatB, props.settings.sliceLonB, props.settings.exaggeration, props.txCode, props.rxCode]);
+    props.settings.sliceLatB, props.settings.sliceLonB, props.settings.exaggeration, props.txCode, props.rxCode, sceneReady]);
 
   // ───────── datos: aurora → instancias ─────────
   useEffect(() => {
@@ -1763,8 +1776,8 @@ export default function IonosphereScene(props: Props) {
     so.scene.add(au.mesh);
     so.auroraObj = au;
     au.mesh.visible = props.settings.showAurora;
-    // eslint-disable-next-line react-hooks/exhaustive-deps -- visibilidad sincronizada al montar; rebuild solo con props.aurora
-  }, [props.aurora]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- visibilidad sincronizada al montar; sceneReady (drop 349): rebuild al terminar init
+  }, [props.aurora, sceneReady]);
 
   // ───────── enlace HF (TX/RX/frecuencia/grid) ─────────
   useEffect(() => {
@@ -1813,8 +1826,8 @@ export default function IonosphereScene(props: Props) {
     so.scene.add(tube.mesh);
     tube.mesh.renderOrder = 5;
     so.linkObj = tube;
-    // eslint-disable-next-line react-hooks/exhaustive-deps -- props leídas vía propsRef (ref-latest); setup único, sin re-init al cambiar props
-  }, [props.txCode, props.rxCode, props.linkFreq, props.ionosondes, props.settings.exaggeration, props.settings.timeMode, props.settings.replayMinutes]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- callbacks vía propsRef (ref-latest); sceneReady (drop 349): rebuild al terminar init
+  }, [props.txCode, props.rxCode, props.linkFreq, props.ionosondes, props.settings.exaggeration, props.settings.timeMode, props.settings.replayMinutes, sceneReady]);
 
   return <div ref={mountRef} className="absolute inset-0" aria-label="Escena 3D del globo ionosférico" />;
 }
