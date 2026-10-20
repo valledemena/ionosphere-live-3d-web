@@ -390,7 +390,7 @@ export default function Home() {
       </header>
 
       {/* paneles laterales */}
-      <div className="absolute left-4 top-20 z-10 w-60 pointer-events-none space-y-3 hidden md:block">
+      <div className="absolute left-4 top-20 bottom-28 z-10 w-60 overflow-y-auto overscroll-contain pointer-events-auto space-y-3 hidden md:block pr-1 [scrollbar-width:thin] [scrollbar-color:rgba(148,163,184,0.35)_transparent] [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-slate-400/30 [&::-webkit-scrollbar-track]:bg-transparent" role="region" tabIndex={0} aria-label="Paneles de clima espacial (desplazable)">
         <SpaceWeatherPanel sw={sw} alerts={alertSnap} />
         <CmePanel cme={cme} epochMs={cmeEpoch} />
         <FlarePanel sw={sw} flares={flares} epochMs={cmeEpoch} />
@@ -406,7 +406,7 @@ export default function Home() {
         <VoyagerPanel voyager={voyager} />
         <MsisPanel msis={msis} />
       </div>
-      <div className="absolute right-4 top-20 z-10 w-64 pointer-events-none space-y-3 hidden md:block">
+      <div className="absolute right-4 top-20 bottom-36 z-10 w-64 overflow-y-auto overscroll-contain pointer-events-auto space-y-3 hidden md:block pl-1 [scrollbar-width:thin] [scrollbar-color:rgba(148,163,184,0.35)_transparent] [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-slate-400/30 [&::-webkit-scrollbar-track]:bg-transparent" role="region" tabIndex={0} aria-label="Capas y radio (desplazable)">
         <LayersPanel settings={settings} onChange={onSettingsChange} ionosondes={ionos} fps={fps} sw={sw ? sw.wind : null} />
         <RadioPanel link={link} tx={tx} rx={rx} freq={linkFreq} onFreq={setLinkFreq} sw={sw ? { kp: sw.kp.now, xray: sw.xray.now } : null} utcSec={effSec} settings={settings} onSettings={onSettingsChange} slicePeak={slicePeak} />
       </div>
@@ -565,11 +565,13 @@ export default function Home() {
       <IdeasPanel open={ideasOpen} onClose={() => setIdeasOpen(false)} />
 
       {/* pie: fuentes (P1-245a: atribución kc2g GIRO/WWROF/eSWua) */}
-      <footer className="absolute bottom-4 left-4 z-10 text-[9px] text-slate-600 pointer-events-none hidden lg:block leading-relaxed">
-        NOAA SWPC · GIRO DIDBase (CC BY-NC-SA 4.0) · SDO (NASA/SDO &amp; AIA, HMI consortium)
-        <br />
-        Fallback kc2g (GIRO/WWROF/eSWua) · Exploración derivada del repositorio C++ ionosphere-live-3d
-      </footer>
+      {!tourOn && (
+        <footer className="absolute bottom-16 left-4 z-10 text-[9px] text-slate-600 pointer-events-none hidden lg:block leading-relaxed">
+          NOAA SWPC · GIRO DIDBase (CC BY-NC-SA 4.0) · SDO (NASA/SDO &amp; AIA, HMI consortium)
+          <br />
+          Fallback kc2g (GIRO/WWROF/eSWua) · Exploración derivada del repositorio C++ ionosphere-live-3d
+        </footer>
+      )}
     </main>
   );
 }
