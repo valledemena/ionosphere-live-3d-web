@@ -45,21 +45,18 @@ Todas son públicas y no requieren API key:
 
 ## Desarrollo (Windows)
 
-Los scripts de `package.json` usan utilidades POSIX (`tee`, `cp`) y `bun` en
-`start`; **en Windows usa los comandos nativos**:
+Los scripts de `package.json` son portables (Node puro, sin utilidades POSIX):
 
 ```powershell
 # Dev (puerto 3000)
-npx next dev -p 3000
+npm run dev
 
-# Build (producción)
-npx next build
-Copy-Item -Recurse -Force .next\static .next\standalone\.next\static
-Copy-Item -Recurse -Force public .next\standalone\public
+# Build (producción: next build + copia a .next/standalone)
+npm run build
 
-# Servir el build standalone
-$env:PORT = 3011; $env:HOSTNAME = "127.0.0.1"
-node .next\standalone\server.js
+# Servir el build standalone (defaults PORT=3011, HOSTNAME=127.0.0.1;
+# PORT/HOSTNAME del entorno tienen prioridad)
+npm run start
 
 # Tests / lint
 npm test        # vitest run (borra .next antes si existe un build)
