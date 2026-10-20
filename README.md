@@ -70,13 +70,6 @@ npm run lint    # eslint .
   un futuro `.env.example`). La aplicación solo lee `NODE_ENV`; el servidor
   standalone además acepta `PORT`/`HOSTNAME`.
 
-## Prisma (opcional)
-
-- `prisma/schema.prisma` (SQLite; modelos plantilla `User`/`Post`) y scripts
-  `db:push`, `db:generate`, `db:migrate`, `db:reset`.
-- El cliente está en `src/lib/db.ts`, pero no se importa desde el resto de la
-  app: **no hay ninguna base de datos en uso activo confirmado**.
-
 ## Assets (texturas)
 
 | Fichero | Dimensiones | Calidad | Uso |
@@ -91,12 +84,13 @@ contrario carga el fallback.
 
 ## Gates del proyecto
 
-| Gate | Comando | Estado (drop-344) |
+| Gate | Comando | Estado (drop-345) |
 | --- | --- | --- |
 | ESLint | `npm run lint` | 0 errores, 0 warnings |
 | TypeScript | `npx tsc --noEmit` | 0 |
 | Tests | `npm test` | 399/399 (43 ficheros) |
-| Build | `npm run build` | 0 (next build + postbuild portable) |
+| Build | `npm run build` | 0 |
+| npm audit | `npm audit --omit=dev` | 0 vulnerabilidades |
 
 ## Flujo de desarrollo (drops)
 

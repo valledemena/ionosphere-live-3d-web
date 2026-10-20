@@ -32,9 +32,5 @@ Thumbs.db
 # test / coverage
 coverage/
 
-# prisma local db
-prisma/*.db
-prisma/*.db-journal
-
 # vercel
 .vercel/

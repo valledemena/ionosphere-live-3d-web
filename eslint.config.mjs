@@ -7,7 +7,6 @@ export default [
       ".next/**",
       "node_modules/**",
       "public/**",
-      "prisma/**",
       "*.config.*",
     ],
   },
