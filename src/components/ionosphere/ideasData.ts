@@ -290,15 +290,14 @@ export const IDEAS: IdeaItem[] = [
   {
     id: "export",
     title: "Exportación de datos y video del replay",
-    status: "parcial",
+    status: "demo",
     impact: 3,
     effort: 2,
     category: "ux",
-    summary: "CSV de cualquier variable del grid con timestamp + turntable PNG/video del cine-mode.",
+    summary: "CSV del grid foF2 con timestamp + PNG y clip de vídeo 15 s del canvas (turntable/cine).",
     detail:
-      "PNG del canvas y CSV del último grid foF2 implementados con la tecla E (IonosphereScene.tsx: captura del frame + gridCsv; nombres y %.9g espejo del Exporter C++, lib/iono/export.ts con tests). El export de vídeo del replay (turntable/cine) no existe.",
+      "Implementado (drop 355): PNG y CSV del último grid foF2 con la tecla E (espejo del Exporter C++: nombres UTC, %.9g, lib/iono/export.ts con tests) + botón 'Clip 15s' en la cabecera: graba 15 s del canvas 3D con MediaRecorder/captureStream y descarga el clip. Formato VP8/VP9/WebM o MP4 según soporte (VP8 preferido a 4K; bitrate adaptativo 4–25 Mbps; hasta 30 fps según rendimiento). Limitaciones: solo el canvas 3D (sin HUD), sin audio, y la pestaña debe permanecer visible durante la grabación.",
     port: "Pase de captura al terminar el composite + dump de GridData en el Timeline.",
-    missing: "export de vídeo del replay (turntable/cine); PNG y CSV ya funcionan con la tecla E",
   },
   {
     id: "tour",

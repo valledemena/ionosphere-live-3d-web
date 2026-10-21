@@ -111,6 +111,11 @@ export interface SceneCallbacks {
   onTourAbort?: () => void;
   // W-4 B1 slice: readout "A->B pk X.X" (null = cortina apagada).
   onSlicePeak?: (label: string | null) => void;
+  // Drop 355 (D2): canvas del renderer para MediaRecorder/captureStream.
+  // Se lee de propsRef.current.callbacks (el objeto es inline en page.tsx;
+  // capturarlo en un efecto lo dejaria obsoleto; como dependencia de efecto
+  // provocaria bucle por identidad nueva cada render). null en cleanup.
+  onCanvasReady?: (canvas: HTMLCanvasElement | null) => void;
 }
 
 interface Props {
@@ -130,6 +135,10 @@ interface Props {
   rxCode: string | null;
   linkFreq: number;
   tourActive: boolean;
+  // Drop 355 (D10): mientras el padre grabe el clip 15 s, el ResizeObserver
+  // no aplica setSize (canvas con dimensiones estables = clip no corrupto);
+  // la ultima resize pendiente se reaplica al terminar la grabacion.
+  videoRecording?: boolean;
   callbacks: SceneCallbacks;
 }
 
@@ -234,10 +243,25 @@ export default function IonosphereScene(props: Props) {
     lastFoGrid: { w: number; h: number; values: Float32Array } | null;
     lastEffMs: number;
     exportReq: boolean;
+    // Drop 355 (D10): resize pospuesta durante grabacion + reaplicador.
+    pendingResize: { w: number; h: number } | null;
+    applySize: (w: number, h: number) => void;
     disposables: ({ dispose(): void } | THREE.Group)[];
     lastLinkKey: string;
     lastGridStamp: number;
   } | null>(null);
+
+  // Drop 355 (D10): al terminar la grabacion se reaplica la ultima resize
+  // pospuesta (renderer/composer/camera). Sin dependencia de todo props.
+  useEffect(() => {
+    if (props.videoRecording) return;
+    const so = S.current;
+    if (so?.pendingResize) {
+      const { w, h } = so.pendingResize;
+      so.pendingResize = null;
+      so.applySize(w, h);
+    }
+  }, [props.videoRecording]);
 
   // ───────── montaje: construir escena una vez ─────────
   useEffect(() => {
@@ -269,6 +293,8 @@ export default function IonosphereScene(props: Props) {
       dayTex.anisotropy = 8;
       nightTex.anisotropy = 4;
       mount.appendChild(renderer.domElement);
+      // Drop 355: el padre (page.tsx) guarda el canvas para captureStream.
+      propsRef.current.callbacks?.onCanvasReady?.(renderer.domElement);
 
       const scene = new THREE.Scene();
       scene.background = new THREE.Color(0x02040a);
@@ -562,6 +588,13 @@ export default function IonosphereScene(props: Props) {
         lastFoGrid: null,
         lastEffMs: 0,
         exportReq: false,
+        pendingResize: null,
+        applySize: (w: number, h: number) => {
+          renderer.setSize(w, h);
+          composer.setSize(w, h);
+          camera.aspect = w / h;
+          camera.updateProjectionMatrix();
+        },
         sliceKey: "",
         lastVolume: null,
         refKey: "",
@@ -601,6 +634,13 @@ export default function IonosphereScene(props: Props) {
         const w = mount.clientWidth,
           h = mount.clientHeight;
         if (w === 0 || h === 0) return;
+        // Drop 355 (D10): con el clip grabando no se redimensiona el canvas
+        // (frames de tamanio variable corrompen el WebM); se reaplica al
+        // terminar via effect de videoRecording.
+        if (propsRef.current.videoRecording) {
+          if (S.current) S.current.pendingResize = { w, h };
+          return;
+        }
         renderer.setSize(w, h);
         composer.setSize(w, h);
         camera.aspect = w / h;
@@ -1498,6 +1538,9 @@ export default function IonosphereScene(props: Props) {
         }
         so.renderer.dispose();
         so.renderer.domElement.remove();
+        // Drop 355: el padre suelta el canvas (StrictMode monta dos veces;
+        // tolerar null->null es obligatorio).
+        propsRef.current.callbacks?.onCanvasReady?.(null);
         S.current = null;
       }
     };

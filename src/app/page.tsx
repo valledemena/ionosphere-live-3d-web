@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { RadioTower, FlaskConical, Github, X, Signal } from "lucide-react";
+import { RadioTower, FlaskConical, Github, X, Signal, Video } from "lucide-react";
 
 import IonosphereScene from "@/components/ionosphere/IonosphereScene";
 import SpaceWeatherPanel from "@/components/ionosphere/hud/SpaceWeatherPanel";
@@ -24,6 +24,7 @@ import TimeBar from "@/components/ionosphere/hud/TimeBar";
 import Legend from "@/components/ionosphere/hud/Legend";
 import IdeasPanel from "@/components/ionosphere/hud/IdeasPanel";
 import { IDEAS } from "@/components/ionosphere/ideasData";
+import { useVideoExport } from "@/hooks/use-video-export";
 
 import {
   SpaceWeatherData,
@@ -114,6 +115,12 @@ export default function Home() {
   } = useAlerts(sw, ionos);
   // W-4 B1 slice: readout "A->B pk X.X" desde la escena.
   const [slicePeak, setSlicePeak] = useState<string | null>(null);
+
+  // Drop 355: clip 15 s del canvas 3D (MediaRecorder). El canvas llega por
+  // onCanvasReady (null en cleanup/StrictMode); el botón arranca deshabilitado
+  // hasta que la escena monte el renderer (el canvas tarda tras las texturas).
+  const [sceneCanvas, setSceneCanvas] = useState<HTMLCanvasElement | null>(null);
+  const videoExport = useVideoExport(sceneCanvas);
 
   // W-2 tour: toggle T con reinicio a t=0 (la escena resetea su reloj al
   // activar); cualquier click en el canvas aborta sin salto de camara.
@@ -327,6 +334,7 @@ export default function Home() {
         rxCode={rxCode}
         linkFreq={linkFreq}
         tourActive={tourOn}
+        videoRecording={videoExport.recording}
         callbacks={{
           onStationPick,
           onLinkResult: setLink,
@@ -336,6 +344,7 @@ export default function Home() {
           onTourDone: () => setTourOn(false),
           onTourAbort: () => setTourOn(false),
           onSlicePeak: setSlicePeak,
+          onCanvasReady: setSceneCanvas,
         }}
       />
 
@@ -362,6 +371,34 @@ export default function Home() {
             </p>
           </div>
           <div className="flex items-center gap-2 pointer-events-auto">
+            <button
+              onClick={() =>
+                videoExport.recording ? videoExport.stop() : videoExport.start(effSec)
+              }
+              disabled={!videoExport.supported || !sceneCanvas || videoExport.busy}
+              title={
+                !sceneCanvas
+                  ? "Preparando escena 3D…"
+                  : videoExport.recording
+                    ? "Detener grabación"
+                    : !videoExport.supported
+                      ? "Grabación no soportada en este navegador"
+                      : "Graba 15 s del canvas 3D (sin HUD ni audio; hasta 30 fps)"
+              }
+              className="hidden sm:flex items-center gap-1.5 text-xs px-3 py-2 rounded-xl bg-rose-500/15 text-rose-200 ring-1 ring-rose-400/30 hover:bg-rose-500/25 transition-colors backdrop-blur-md disabled:opacity-40 disabled:cursor-not-allowed"
+            >
+              <Video size={13} />
+              {videoExport.busy ? (
+                <span>Procesando…</span>
+              ) : videoExport.recording ? (
+                <>
+                  <span className="w-1.5 h-1.5 rounded-full bg-rose-500 animate-pulse" />
+                  <span>REC {videoExport.secondsLeft}s</span>
+                </>
+              ) : (
+                <span className="hidden sm:inline">Clip 15s</span>
+              )}
+            </button>
             <button
               onClick={() => setIdeasOpen(true)}
               className="flex items-center gap-1.5 text-xs px-3 py-2 rounded-xl bg-cyan-500/15 text-cyan-200 ring-1 ring-cyan-400/30 hover:bg-cyan-500/25 transition-colors backdrop-blur-md"
