@@ -217,16 +217,15 @@ export const IDEAS: IdeaItem[] = [
   {
     id: "glow",
     title: "Airglow cromático en el shell (557.7/630 nm)",
-    status: "parcial",
+    status: "demo",
     impact: 3,
     effort: 2,
     category: "visual",
-    summary: "Gradiente verde-rojo por altura en el limbo nocturno del shell, estilo fotográfico ISS.",
+    summary: "Gradiente verde→rojo por hmF2 en el limbo nocturno, con single-scattering ficticio modulado por densidad.",
     detail:
-      "Existe un toque sutil de airglow en el shell: término verde 557.7 nm modulado por fresnel y noche en el shader del shell (shaders.ts, línea del comentario 'toque airglow en el limbo nocturno'). Falta el gradiente rojo 630 nm por altura y el single-scattering ficticio modulado por densidad del alcance completo.",
+      "Drop 354 (tuning TUNE1): IONO_FRAG mezcla bandas suaves por vHm — verde OI 557.7 nm con smoothstep(215,290) km ×0.25 (máx comparable al toque del 353) y rojo OI 630 nm con smoothstep(265,330) km ×0.85 (cálido dominante en hmF2 alto) — moduladas por un single-scattering ficticio ss = fres × (1−dayAmount) × (0.35+0.65·f) (f = foF2 0..1) · shim. Solo en hemisferio nocturno/crepúsculo; día, colormap y opacidad intactos, sin clipping additive.",
     port:
       "IonosondeLayer/GridLayer shader: mezclar término airglow según vH (altura) en el hemisferio nocturno.",
-    missing: "gradiente 630 nm por altura y single-scattering ficticio modulado por densidad; solo está el toque verde 557.7 nm en limbo nocturno",
   },
   {
     id: "iono",

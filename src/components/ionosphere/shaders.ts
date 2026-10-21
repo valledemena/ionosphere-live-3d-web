@@ -300,8 +300,22 @@ void main() {
   alpha *= (0.45 + 0.55 * dayAmount * uDayBoost);
 
   vec3 col = base * (0.55 + 0.9 * dayAmount);
-  // toque "airglow" en el limbo nocturno (verde tenue 557.7nm)
-  col += vec3(0.05, 0.28, 0.16) * fres * (1.0 - dayAmount) * 0.35;
+
+  // ── Airglow cromático 557.7/630 nm (drop 354, idea glow) ─────────────────
+  // Bandas suaves por hmF2 local (vHm, km): verde OI 557.7 nm en la parte
+  // baja del perfil (hmF2 ≲ 290 km) y rojo OI 630 nm en la parte alta
+  // (F-region con hmF2 alto), con cruces graduales (sin anillo duro).
+  // Ganancias separadas (tuning TUNE1): verde máximo comparable al 353
+  // (0.55·0.25 = 0.1375 ≤ 1.5·0.098) y rojo cálido dominante en hm alto.
+  float gW = 1.0 - smoothstep(215.0, 290.0, vHm);   // verde: hmF2 bajo
+  float rW = smoothstep(265.0, 330.0, vHm);         // rojo: hmF2 alto
+  // Single-scattering FICTICIO: limbo (fres) × noche (1-dayAmount) ×
+  // proxy de densidad de columna (f = foF2 0..1). Es una aproximación
+  // visual — NO transferencia radiativa real. Sutil por diseño: el shell
+  // es additive y la suma no debe hacer clipping evidente.
+  float ss = fres * (1.0 - dayAmount) * (0.35 + 0.65 * f);
+  col += vec3(0.10, 0.55, 0.26) * gW * ss * 0.25 * shim;
+  col += vec3(1.00, 0.22, 0.10) * rW * ss * 0.85 * shim;
 
   gl_FragColor = vec4(col, clamp(alpha, 0.0, 1.0));
 }
