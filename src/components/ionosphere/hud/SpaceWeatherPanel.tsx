@@ -1,18 +1,26 @@
 "use client";
 
 import { useState } from "react";
-import { Activity, Sun, Wind, Zap, Globe2 } from "lucide-react";
+import { Activity, Sun, Wind, Zap, Globe2, Settings } from "lucide-react";
 import { SpaceWeatherData } from "../types";
 import { sourceBadge } from "@/lib/iono/fallback";
 import Sparkline from "./Sparkline";
+import type { AlertPrefs } from "@/lib/iono/alertPrefs";
+import { DEFAULT_ALERT_PREFS } from "@/lib/iono/alertPrefs";
 
 /** Panel de clima espacial: Kp, F10.7, viento solar, GOES X-ray + disco solar SDO */
 export default function SpaceWeatherPanel({
   sw,
   alerts,
+  prefs,
+  onChangePrefs,
+  onTestSound,
 }: {
   sw: SpaceWeatherData | null;
   alerts?: import("@/lib/iono/alerts").AlertSnapshot | null;
+  prefs?: AlertPrefs;
+  onChangePrefs?: (patch: Partial<AlertPrefs>) => void;
+  onTestSound?: () => void;
 }) {
   const [solarImg, setSolarImg] = useState(true);
   if (!sw) {
@@ -161,40 +169,162 @@ export default function SpaceWeatherPanel({
           </p>
         </div>
       )}
-      {alerts && <AlertsSection alerts={alerts} />}
+      {alerts && (
+        <AlertsSection alerts={alerts} prefs={prefs} onChangePrefs={onChangePrefs} onTestSound={onTestSound} />
+      )}
     </PanelBox>
   );
 }
 
-/** W-2 alertas: semaforo sobre bundles publicados + ultimas transiciones. */
+/** W-2 alertas + drop 353: umbral rojo configurable persistido, toast y chime. */
 import { RULE_NAMES, type AlertSnapshot } from "@/lib/iono/alerts";
 
 const LVL_TXT = ["GREEN", "AMBER", "RED", "OFF"] as const;
 const LVL_CLS = ["text-emerald-400", "text-amber-300", "text-red-400", "text-slate-500"] as const;
 
-function AlertsSection({ alerts }: { alerts: AlertSnapshot }) {
+function ruleHint(r: number, p: AlertPrefs): string {
+  const t = p.thresholds;
+  if (r === 0) return `RED >= Kp ${t.kpRed}`;
+  if (r === 1) return `RED <= Bz ${t.bzRed} nT`;
+  if (r === 2) return `RED >= ${t.xrayRedRank === 4 ? "X" : t.xrayRedRank === 3 ? "M" : "C"}`;
+  return `RED >= ${Math.round(t.mufRedDrop * 100)}% caida`;
+}
+
+function AlertsSection({
+  alerts,
+  prefs = DEFAULT_ALERT_PREFS,
+  onChangePrefs,
+  onTestSound,
+}: {
+  alerts: AlertSnapshot;
+  prefs?: AlertPrefs;
+  onChangePrefs?: (patch: Partial<AlertPrefs>) => void;
+  onTestSound?: () => void;
+}) {
+  const [open, setOpen] = useState(false);
   const evs = alerts.events.slice(-6).reverse();
+  const t = prefs.thresholds;
+  const set = onChangePrefs;
   return (
     <div className="mt-2 pt-2 border-t border-white/10">
       <div className="flex items-center justify-between">
         <span className="text-[11px] uppercase tracking-wider text-slate-400">Alertas</span>
-        <span className={`text-[11px] font-semibold ${LVL_CLS[alerts.overall]}`}>
-          {LVL_TXT[alerts.overall]}
+        <span className="flex items-center gap-1.5">
+          <span className={`text-[11px] font-semibold ${LVL_CLS[alerts.overall]}`}>
+            {LVL_TXT[alerts.overall]}
+          </span>
+          {set && (
+            <button
+              type="button"
+              onClick={() => setOpen((v) => !v)}
+              aria-label="Ajustes de alertas"
+              aria-expanded={open}
+              title="Ajustes de alertas"
+              className="p-0.5 rounded text-slate-500 hover:text-cyan-200 transition-colors"
+            >
+              <Settings size={12} />
+            </button>
+          )}
         </span>
       </div>
       {RULE_NAMES.map((n, r) => (
-        <div key={n} className="flex items-center justify-between mt-0.5">
+        <div key={n} className="flex items-center justify-between mt-0.5" title={ruleHint(r, prefs)}>
           <span className="text-[11px] text-slate-500">{n}</span>
           <span className={`text-[11px] font-medium ${LVL_CLS[alerts.levels[r]]}`}>
             {LVL_TXT[alerts.levels[r]]}
           </span>
         </div>
       ))}
+      {open && set && (
+        <div className="mt-1.5 rounded-lg bg-white/[0.04] ring-1 ring-white/10 px-2 py-1.5 space-y-1">
+          <Row label={`Kp rojo ≥ ${t.kpRed}`}>
+            <input
+              type="range" min={4} max={9} step={0.5} value={t.kpRed}
+              aria-label="Umbral Kp rojo"
+              onChange={(e) => set({ thresholds: { ...t, kpRed: Number(e.target.value) } })}
+              className="w-20 accent-red-400"
+            />
+          </Row>
+          <Row label={`Bz rojo ≤ ${t.bzRed} nT`}>
+            <input
+              type="range" min={-30} max={-5} step={1} value={t.bzRed}
+              aria-label="Umbral Bz rojo"
+              onChange={(e) => set({ thresholds: { ...t, bzRed: Number(e.target.value) } })}
+              className="w-20 accent-red-400"
+            />
+          </Row>
+          <Row label="X-ray rojo">
+            <select
+              value={t.xrayRedRank}
+              aria-label="Umbral X-ray rojo"
+              onChange={(e) => set({ thresholds: { ...t, xrayRedRank: Number(e.target.value) } })}
+              className="bg-[#0a0f1e] text-[11px] text-slate-200 ring-1 ring-white/10 rounded px-1"
+            >
+              <option value={2}>C</option>
+              <option value={3}>M</option>
+              <option value={4}>X</option>
+            </select>
+          </Row>
+          <Row label={`MUF rojo ≥ ${Math.round(t.mufRedDrop * 100)}%`}>
+            <input
+              type="range" min={10} max={50} step={5} value={Math.round(t.mufRedDrop * 100)}
+              aria-label="Umbral caida MUF roja"
+              onChange={(e) => set({ thresholds: { ...t, mufRedDrop: Number(e.target.value) / 100 } })}
+              className="w-20 accent-red-400"
+            />
+          </Row>
+          <div className="flex flex-wrap items-center gap-x-3 gap-y-1 pt-0.5">
+            <label className="flex items-center gap-1 text-[10px] text-slate-400">
+              <input
+                type="checkbox" checked={prefs.toast}
+                onChange={(e) => set({ toast: e.target.checked })}
+                aria-label="Avisos toast"
+                className="accent-cyan-400"
+              />
+              Toast
+            </label>
+            <label className="flex items-center gap-1 text-[10px] text-slate-400">
+              <input
+                type="checkbox" checked={prefs.sound}
+                onChange={(e) => set({ sound: e.target.checked })}
+                aria-label="Sonido de alertas"
+                className="accent-cyan-400"
+              />
+              Sonido
+            </label>
+            <button
+              type="button"
+              onClick={() => onTestSound?.()}
+              className="text-[10px] px-1.5 py-0.5 rounded bg-cyan-500/15 text-cyan-200 ring-1 ring-cyan-400/30 hover:bg-cyan-500/25"
+            >
+              Probar
+            </button>
+            <button
+              type="button"
+              onClick={() =>
+                set({ thresholds: DEFAULT_ALERT_PREFS.thresholds, toast: true, sound: false })
+              }
+              className="text-[10px] px-1.5 py-0.5 rounded bg-white/5 text-slate-400 ring-1 ring-white/10 hover:bg-white/10"
+            >
+              Restablecer
+            </button>
+          </div>
+        </div>
+      )}
       {evs.map((ev, i) => (
         <div key={`${ev.utc}-${i}`} className="text-[10px] text-slate-600">
           {RULE_NAMES[ev.rule]} {LVL_TXT[ev.from]} -&gt; {LVL_TXT[ev.to]}
         </div>
       ))}
+    </div>
+  );
+}
+
+function Row({ label, children }: { label: string; children: React.ReactNode }) {
+  return (
+    <div className="flex items-center justify-between gap-2">
+      <span className="text-[10px] text-slate-400 truncate">{label}</span>
+      {children}
     </div>
   );
 }

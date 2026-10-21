@@ -267,15 +267,14 @@ export const IDEAS: IdeaItem[] = [
   {
     id: "alert",
     title: "Alertas de propagación configurables",
-    status: "parcial",
+    status: "demo",
     impact: 4,
     effort: 2,
     category: "ux",
-    summary: "Umbrales Kp≥5, Bz<−10, X-ray≥M, caída MUF>20% vs mediana 24 h → toast + registro + sonido.",
+    summary: "Umbrales rojos configurables (Kp/Bz/X-ray/MUF), persistidos, con aviso toast y chime opcional.",
     detail:
-      "Motor y panel en vivo: AlertEngine (lib/iono/alerts.ts) con umbrales nombrados fijos (KP_RED=5, BZ_RED=−10, XRAY rank M, MUF_RED_DROP=20%), rojo tras 2 muestras, mediana MUF 24 h y OFF honesto; evaluado al publicar datos en page.tsx y mostrado en el panel CLIMA ESPACIAL (ALERTAS Kp/Bz/X-ray/MUF). Los umbrales no son configurables desde la UI y faltan toast y sonido. Espejo del motor C++ (drop 139).",
-    port: "Ya portado: src/Data/Alerts.h (drop 139); fetchWorker() evalúa reglas al publicar cada bundle.",
-    missing: "umbrales configurables en UI, toast y sonido; motor y panel de alertas ya funcionan",
+      "Motor + panel + configuración en vivo (drop 353): AlertEngine acepta AlertThresholds rojos (kpRed/bzRed/xrayRedRank/mufRedDrop, normalizados defensivamente) y setThresholds conserva la historia MUF; las preferencias (umbrales + toast + sonido) persisten en localStorage (ionosphere.alerts.prefs.v1) vía useAlerts; el panel ALERTAS despliega sliders/select/checkboxes con Probar/Restablecer y avisa solo en transiciones ascendentes a AMBER/RED (sin spam). Espejo del motor C++ (drop 139) con capa web de configuración propia.",
+    port: "Ya portado: src/Data/Alerts.h (drop 139); los umbrales configurables son extensión web (drop 353).",
   },
   {
     id: "pred",

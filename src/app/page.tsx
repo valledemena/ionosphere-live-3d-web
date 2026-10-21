@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { RadioTower, FlaskConical, Github, X, Signal } from "lucide-react";
 
 import IonosphereScene from "@/components/ionosphere/IonosphereScene";
@@ -45,7 +45,9 @@ import {
 import { LinkResult } from "@/lib/iono/hf";
 import type { CatalogPayload } from "@/lib/iono/satellites/catalog";
 import { RING_LABEL } from "@/lib/iono/satellites/ring1963";
-import { AlertEngine, buildAlertInput, type AlertSnapshot } from "@/lib/iono/alerts";
+import { type AlertSnapshot } from "@/lib/iono/alerts";
+import type { AlertPrefs } from "@/lib/iono/alertPrefs";
+import { useAlerts } from "@/hooks/use-alerts";
 import { tourCount, tourKey } from "@/lib/iono/tour";
 import { getSunInfo } from "@/lib/iono/solar";
 import { useNow } from "@/hooks/use-now";
@@ -102,11 +104,14 @@ export default function Home() {
   // (evita mismatch de hidratacion React #418 con el HTML servido).
   const nowMs = useNow(1000) ?? 0;
 
-  // W-2 alertas: motor vivo en ref; se evalua al publicar datos (sw/ionos),
-  // sin fetch nuevo. El wiring (normalizacion de clase + honestidad de
-  // fuentes + mediana MUF) vive en buildAlertInput: contrato testeado.
-  const alertsRef = useRef<AlertEngine | null>(null);
-  const [alertSnap, setAlertSnap] = useState<AlertSnapshot | null>(null);
+  // W-2/W-353 alertas: motor, snapshot, prefs persistentes, toast y chime
+  // encapsulados en useAlerts (contrato buildAlertInput sigue testeado).
+  const {
+    snap: alertSnap,
+    prefs: alertPrefs,
+    setPrefs: onAlertPrefsChange,
+    testSound: onAlertTestSound,
+  } = useAlerts(sw, ionos);
   // W-4 B1 slice: readout "A->B pk X.X" desde la escena.
   const [slicePeak, setSlicePeak] = useState<string | null>(null);
 
@@ -125,17 +130,6 @@ export default function Home() {
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
   }, []);
-
-  useEffect(() => {
-    const eng = alertsRef.current ?? (alertsRef.current = new AlertEngine());
-    const mufs = (ionos?.stations ?? []).map((s) => s.muf3000);
-    eng.evaluate(buildAlertInput(sw, mufs, Date.now() / 1000));
-    setAlertSnap({
-      overall: eng.overall(),
-      levels: [eng.level(0), eng.level(1), eng.level(2), eng.level(3)],
-      events: [...eng.events()],
-    });
-  }, [sw, ionos]);
 
   // ─── polling de datos ───
   useEffect(() => {
@@ -392,7 +386,13 @@ export default function Home() {
 
       {/* paneles laterales */}
       <div className="absolute left-4 top-20 bottom-28 z-10 w-60 overflow-y-auto overscroll-contain pointer-events-auto space-y-3 hidden md:block pr-1 [scrollbar-width:thin] [scrollbar-color:rgba(148,163,184,0.35)_transparent] [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-slate-400/30 [&::-webkit-scrollbar-track]:bg-transparent" role="region" tabIndex={0} aria-label="Paneles de clima espacial (desplazable)">
-        <SpaceWeatherPanel sw={sw} alerts={alertSnap} />
+        <SpaceWeatherPanel
+          sw={sw}
+          alerts={alertSnap}
+          prefs={alertPrefs}
+          onChangePrefs={onAlertPrefsChange}
+          onTestSound={onAlertTestSound}
+        />
         <CmePanel cme={cme} epochMs={cmeEpoch} />
         <FlarePanel sw={sw} flares={flares} epochMs={cmeEpoch} />
         <WsprPanel wspr={wspr} epochMs={cmeEpoch} />
@@ -438,6 +438,9 @@ export default function Home() {
         onFreq={setLinkFreq}
         effSec={effSec}
         alerts={alertSnap}
+        alertPrefs={alertPrefs}
+        onAlertPrefsChange={onAlertPrefsChange}
+        onAlertTestSound={onAlertTestSound}
         slicePeak={slicePeak}
       />
 
@@ -623,6 +626,9 @@ function MobilePanels({
   onFreq,
   effSec,
   alerts,
+  alertPrefs,
+  onAlertPrefsChange,
+  onAlertTestSound,
   slicePeak,
 }: {
   sw: SpaceWeatherData | null;
@@ -649,6 +655,9 @@ function MobilePanels({
   onFreq: (f: number) => void;
   effSec: number;
   alerts: AlertSnapshot | null;
+  alertPrefs: AlertPrefs;
+  onAlertPrefsChange: (patch: Partial<AlertPrefs>) => void;
+  onAlertTestSound: () => void;
   slicePeak: string | null;
 }) {
   const [tab, setTab] = useState<"wx" | "radio" | "layers" | null>(null);
@@ -677,7 +686,13 @@ function MobilePanels({
       </div>
       {tab === "wx" && (
         <>
-          <SpaceWeatherPanel sw={sw} alerts={alerts} />
+          <SpaceWeatherPanel
+            sw={sw}
+            alerts={alerts}
+            prefs={alertPrefs}
+            onChangePrefs={onAlertPrefsChange}
+            onTestSound={onAlertTestSound}
+          />
           <div className="mt-2">
             <CmePanel cme={cme} epochMs={cmeEpoch} />
           </div>

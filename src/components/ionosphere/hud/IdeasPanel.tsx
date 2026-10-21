@@ -44,7 +44,7 @@ export default function IdeasPanel({ open, onClose }: { open: boolean; onClose: 
               Exploración de ideas y evaluación
             </h2>
             <p className="text-[11px] text-slate-500 mt-0.5">
-              Auditoría src/ drop 350 · {IDEAS.length} ideas · {counts.demo} demo · {counts.parcial} {counts.parcial === 1 ? "parcial" : "parciales"} · {counts.propuesta} {counts.propuesta === 1 ? "propuesta" : "propuestas"} · {counts.aplazada} {counts.aplazada === 1 ? "aplazada" : "aplazadas"}
+              Auditoría src/ drop 353 · {IDEAS.length} ideas · {counts.demo} demo · {counts.parcial} {counts.parcial === 1 ? "parcial" : "parciales"} · {counts.propuesta} {counts.propuesta === 1 ? "propuesta" : "propuestas"} · {counts.aplazada} {counts.aplazada === 1 ? "aplazada" : "aplazadas"}
             </p>
           </div>
           <button onClick={onClose} className="text-slate-400 hover:text-slate-100 transition-colors p-1.5">

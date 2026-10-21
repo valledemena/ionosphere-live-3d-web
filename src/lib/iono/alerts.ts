@@ -20,7 +20,8 @@ export enum AlertRule {
 }
 export const NRULES = 4;
 
-// Umbrales del catalogo (constantes nombradas, identicas al C++).
+// Umbrales del catalogo (constantes nombradas, identicas al C++ = defaults
+// del drop 353; el motor ahora acepta umbrales rojos configurables).
 export const KP_AMBER = 4.0;
 export const KP_RED = 5.0;
 export const BZ_AMBER = -5.0; // Bz sur negativo
@@ -34,6 +35,44 @@ export const MUF_HIST_MAX = 288; // 24 h a 5 min/muestra
 export const MUF_MIN_SAMPLES = 6;
 export const MUF_MIN_SPAN_SEC = 3 * 3600;
 export const LOG_MAX = 32; // cola acotada en memoria
+
+/** Solo umbrales ROJOS configurables (drop 353). Ámbar y debounce intactos. */
+export interface AlertThresholds {
+  kpRed: number; // 4..9, paso 0.5
+  bzRed: number; // -30..-5, entero
+  xrayRedRank: number; // 2..4 entero (C=2 M=3 X=4)
+  mufRedDrop: number; // 0.10..0.50, paso 0.05
+}
+
+export const DEFAULT_ALERT_THRESHOLDS: AlertThresholds = {
+  kpRed: KP_RED,
+  bzRed: BZ_RED,
+  xrayRedRank: XRAY_RED_RANK,
+  mufRedDrop: MUF_RED_DROP,
+};
+
+const snap = (v: number, step: number, lo: number, hi: number): number => {
+  const n = Math.round(v / step) * step;
+  // evita float sucio: re-añade con 2 decimales maximos (pasos 0.5/0.05)
+  return Math.min(hi, Math.max(lo, Math.round(n * 100) / 100));
+};
+
+const isNum = (v: unknown): v is number => typeof v === "number" && Number.isFinite(v);
+
+/**
+ * Normaliza umbrales rojos de forma defensiva (drop 353): cualquier campo
+ * ausente, NaN, string no numerico o fuera de rango cae al default del
+ * catalogo. Puro.
+ */
+export function normalizeAlertThresholds(v: unknown): AlertThresholds {
+  const o = (v ?? {}) as Partial<AlertThresholds>;
+  const d = DEFAULT_ALERT_THRESHOLDS;
+  const kp = isNum(o.kpRed) ? snap(o.kpRed, 0.5, 4, 9) : d.kpRed;
+  const bz = isNum(o.bzRed) ? Math.min(-5, Math.max(-30, Math.round(o.bzRed))) : d.bzRed;
+  const xr = isNum(o.xrayRedRank) ? Math.min(4, Math.max(2, Math.round(o.xrayRedRank))) : d.xrayRedRank;
+  const muf = isNum(o.mufRedDrop) ? snap(o.mufRedDrop, 0.05, 0.1, 0.5) : d.mufRedDrop;
+  return { kpRed: kp, bzRed: bz, xrayRedRank: xr, mufRedDrop: muf };
+}
 
 /** Rango NOAA de clase X-ray: A=0 B=1 C=2 M=3 X=4. */
 export function xrayRank(c: string): number {
@@ -124,14 +163,28 @@ export class AlertEngine {
   private mufHist: MufPt[] = [];
   private lastMufUtc = 0;
   private log: AlertEvent[] = [];
+  private th: AlertThresholds;
+
+  constructor(thresholds?: AlertThresholds) {
+    this.th = normalizeAlertThresholds(thresholds ?? DEFAULT_ALERT_THRESHOLDS);
+  }
+
+  /** Cambia umbrales rojos sin borrar historia/estado (drop 353). */
+  setThresholds(t: AlertThresholds): void {
+    this.th = normalizeAlertThresholds(t);
+  }
+
+  thresholds(): AlertThresholds {
+    return { ...this.th };
+  }
 
   /** Evalua una muestra (una publicacion de datos). Barata y pura. */
   evaluate(input: AlertInput): void {
-    this.setRule(AlertRule.KP, input.kpOk ? AlertEngine.rawKp(input.kp) : AlertLevel.OFF, input.utc);
-    this.setRule(AlertRule.BZ, input.bzOk ? AlertEngine.rawBz(input.bz) : AlertLevel.OFF, input.utc);
+    this.setRule(AlertRule.KP, input.kpOk ? this.rawKp(input.kp) : AlertLevel.OFF, input.utc);
+    this.setRule(AlertRule.BZ, input.bzOk ? this.rawBz(input.bz) : AlertLevel.OFF, input.utc);
     this.setRule(
       AlertRule.XRAY,
-      input.xrayOk ? AlertEngine.rawXray(input.xrayClass) : AlertLevel.OFF,
+      input.xrayOk ? this.rawXray(input.xrayClass) : AlertLevel.OFF,
       input.utc,
     );
     this.setRule(AlertRule.MUF, this.mufLevel(input), input.utc);
@@ -157,17 +210,17 @@ export class AlertEngine {
     return this.mufHist.length;
   }
 
-  private static rawKp(kp: number): AlertLevel {
-    return kp >= KP_RED ? AlertLevel.RED : kp >= KP_AMBER ? AlertLevel.AMBER : AlertLevel.GREEN;
+  private rawKp(kp: number): AlertLevel {
+    return kp >= this.th.kpRed ? AlertLevel.RED : kp >= KP_AMBER ? AlertLevel.AMBER : AlertLevel.GREEN;
   }
 
-  private static rawBz(bz: number): AlertLevel {
-    return bz <= BZ_RED ? AlertLevel.RED : bz <= BZ_AMBER ? AlertLevel.AMBER : AlertLevel.GREEN;
+  private rawBz(bz: number): AlertLevel {
+    return bz <= this.th.bzRed ? AlertLevel.RED : bz <= BZ_AMBER ? AlertLevel.AMBER : AlertLevel.GREEN;
   }
 
-  private static rawXray(c: string): AlertLevel {
+  private rawXray(c: string): AlertLevel {
     const r = xrayRank(c);
-    return r >= XRAY_RED_RANK ? AlertLevel.RED : r >= XRAY_AMBER_RANK ? AlertLevel.AMBER : AlertLevel.GREEN;
+    return r >= this.th.xrayRedRank ? AlertLevel.RED : r >= XRAY_AMBER_RANK ? AlertLevel.AMBER : AlertLevel.GREEN;
   }
 
   private setRule(r: number, raw: AlertLevel, utc: number): void {
@@ -208,7 +261,7 @@ export class AlertEngine {
     const med = vs[Math.floor(vs.length / 2)];
     if (!(med > 0) || !input.mufOk || !(input.muf > 0)) return AlertLevel.OFF;
     const drop = (med - input.muf) / med;
-    if (drop >= MUF_RED_DROP) return AlertLevel.RED;
+    if (drop >= this.th.mufRedDrop) return AlertLevel.RED;
     if (drop >= MUF_AMBER_DROP) return AlertLevel.AMBER;
     return AlertLevel.GREEN;
   }
