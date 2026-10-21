@@ -27,8 +27,9 @@ Todas son públicas y no requieren API key:
 
 - **Next.js 16** (App Router, `output: standalone`) + **React 19**
 - **Three.js** — escena WebGL (Tierra, auroras, magnetosfera, satélites)
-- **Tailwind CSS 4** + **Radix UI / shadcn** (estilo `new-york`, componentes en `src/components/ui`)
-- **Recharts** — gráficos de los paneles
+- **Tailwind CSS 4** + **Radix UI / shadcn** (solo quedan `toast.tsx`/`toaster.tsx`
+  en `src/components/ui`; el resto del scaffolding UI shadcn se retiró en el
+  drop-352 por no tener consumidores)
 - **Zustand**, **TanStack Query/Table** y otras dependencias de la plantilla
   (`framer-motion`, `next-intl`, `date-fns`, `sharp`, `uuid`, `zod`, `react-markdown`,
   `@dnd-kit/*`, `@reactuses/core`) — retiradas en el drop-351: ninguna tenía
