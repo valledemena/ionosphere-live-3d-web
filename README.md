@@ -31,8 +31,8 @@ Todas son públicas y no requieren API key:
 - **Recharts** — gráficos de los paneles
 - **Zustand**, **TanStack Query/Table** y otras dependencias de la plantilla
   (`framer-motion`, `next-intl`, `date-fns`, `sharp`, `uuid`, `zod`, `react-markdown`,
-  `@dnd-kit/*`, `@reactuses/core`) — declaradas en `package.json` sin importaciones
-  activas en `src/`; candidatas a retirar en un drop de dependencias
+  `@dnd-kit/*`, `@reactuses/core`) — retiradas en el drop-351: ninguna tenía
+  importaciones activas en `src/`
 - **Vitest 5** (tests), **ESLint 9** (flat config en `eslint.config.mjs`), **TypeScript 5**
 - Probado con **Node 24 / npm 11**
 
