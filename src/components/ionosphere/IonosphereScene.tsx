@@ -20,6 +20,7 @@ import { buildLivePeakGrids, buildLiveVolume } from "@/lib/iono/profileGrid";
 import { godraysPassState, mat4Mul, type Mat4 } from "@/lib/iono/godrays";
 import { buildPngName, gridCsv } from "@/lib/iono/export";
 import { computeLink, LinkResult } from "@/lib/iono/hf";
+import { volumeFaradayDeg, FaradayPoint } from "@/lib/iono/faraday";
 import {
   buildSliceGrid,
   resolveSliceEndpoints,
@@ -1841,7 +1842,9 @@ export default function IonosphereScene(props: Props) {
     const rx = props.ionosondes.stations.find((s) => s.code === rxCode);
     if (!tx || !rx) return;
 
-    const key = `${txCode}|${rxCode}|${linkFreq}|${settings.exaggeration}|${so.gridState.stamp}`;
+    // V7 (scout 356): incluir el volumen en la clave para que el Faraday
+    // se recalcule cuando el volumen se reconstruye (nuevo timestamp).
+    const key = `${txCode}|${rxCode}|${linkFreq}|${settings.exaggeration}|${so.gridState.stamp}|${so.lastVolume?.timestamp ?? -1}`;
     if (key === so.lastLinkKey) return;
     so.lastLinkKey = key;
 
@@ -1857,6 +1860,19 @@ export default function IonosphereScene(props: Props) {
       hmAt,
       linkFreq
     );
+    // Drop 356: rotación Faraday sobre el volumen vivo (si existe). Se pasan
+    // TODOS los puntos (con viable); el módulo omite los segmentos con
+    // viable===0 en cualquier extremo — filtrar aquí los puntos puentearía
+    // saltos no viables y se integraría un rayo inexistente.
+    if (so.lastVolume?.valid) {
+      const pts: FaradayPoint[] = link.points3D.map((p) => ({
+        lat: p.lat,
+        lon: p.lon,
+        altKm: p.altKm,
+        viable: p.viable,
+      }));
+      link.faradayDeg = volumeFaradayDeg(pts, linkFreq, so.lastVolume);
+    }
     props.callbacks.onLinkResult?.(link);
 
     if (so.linkObj) {

@@ -66,6 +66,30 @@ export default function RadioPanel({ link, tx, rx, freq, onFreq, sw, utcSec, set
         <Metric label="LUF est." value={luf.toFixed(1)} unit="MHz" accent="text-orange-300" />
       </div>
 
+      {/* Drop 356: rotación Faraday (V6 del scout: toLocaleString, vueltas
+          con 1 decimal, absoluto en title, mod 360 como observable). */}
+      {link.faradayDeg == null ? (
+        <div className="text-[10px] text-slate-500 mb-2">Rotación Faraday: sin volumen</div>
+      ) : (
+        (() => {
+          const abs = Math.abs(link.faradayDeg);
+          const turns = abs / 360;
+          const mod = link.faradayDeg - 360 * Math.trunc(link.faradayDeg / 360);
+          return (
+            <div
+              className="text-[10px] font-mono text-slate-300 mb-2"
+              title={`≡ ${mod.toFixed(1)}° (mod 360) · absoluto ${abs.toFixed(1)}° · signo = sentido de B a lo largo del rayo`}
+            >
+              Faraday (ida) {abs.toLocaleString("es-ES", { maximumFractionDigits: 0 })}° ·{" "}
+              {turns.toFixed(1)} vueltas · @{freq.toFixed(1)} MHz
+              <div className="text-[9px] text-slate-500 font-normal">
+                1/f² · dipolo IGRF grado 1 (2025.0) · integrado en el rayo
+              </div>
+            </div>
+          );
+        })()
+      )}
+
       {absorb > 1 && (
         <div className="flex items-start gap-1.5 text-[10px] text-amber-300/90 bg-amber-500/10 rounded-lg px-2 py-1.5 mb-2">
           <Info size={11} className="mt-0.5 shrink-0" />

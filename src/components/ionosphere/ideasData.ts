@@ -242,14 +242,14 @@ export const IDEAS: IdeaItem[] = [
   {
     id: "faraday",
     title: "Faraday con dipolo IGRF real",
-    status: "propuesta",
+    status: "demo",
     impact: 3,
     effort: 3,
     category: "fisica",
-    summary: "Ω = 2.36e-2/f² ∫ B·cosθ·Ne dl con inclinación real del campo y por frecuencia del enlace.",
+    summary: "Ω = K·∫Ne·B_par·dl/f² con dipolo IGRF grado 1 (2025.0), dependencia 1/f² real e integración sobre el volumen vivo.",
     detail:
-      "La aproximación didáctica actual (Ω ≈ 2.2·TEC·(0.4+0.6|cosλ|) @100 MHz) ignora el dipolo y la dependencia 1/f². Un IGRF de grado 8 son ~80 coeficientes y 20 líneas de evaluación.",
-    port: "FaradayLayer.cpp + RadioPropagationAdapter.cpp:134-140 con los coeficientes IGRF-14 embebidos.",
+      "Implementado (drop 356): módulo puro lib/iono/faraday.ts integra Ne del volumen de densidad vivo (sampleVolume, desnormalizado a m⁻³) y B_par del dipolo IGRF (grado 1, época 2025.0 congelada sin variación secular, en nT, marco escena) a lo largo del trazado HF multi-salto, por punto medio con interpolación 3D (robusta a antimeridiano). Constante Ω_deg = 1.3522e-15·I/f_MHz² (B en nT); dependencia 1/f² exacta. Los saltos no viables (viable=0) se filtran; los segmentos degenerados se descartan. Convención de signo declarada (no es el RM astronómico). El armónico de grado 8 de IGRF queda FUERA de alcance (eran ~80 coeficientes); el dipolo grado 1 captura la física principal.",
+    port: "FaradayLayer.cpp + RadioPropagationAdapter.cpp:167-175 (stationOmegaRad → Utils/Igrf.h); el motor C++ ya usa IGRF grado 8, el web grado 1 (grado 8 fuera de alcance).",
   },
   {
     id: "es",

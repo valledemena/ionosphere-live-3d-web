@@ -36,6 +36,9 @@ export interface LinkResult {
   fotLink: number; // 0.85 × mufLink
   points3D: { lat: number; lon: number; altKm: number; hopIndex: number; viable: number }[];
   virtualHeight: number;
+  /** Drop 356: rotación Faraday (grados) integrada sobre el volumen vivo;
+   * null si no hay volumen o el enlace no es evaluable (lo rellena la escena). */
+  faradayDeg: number | null;
 }
 
 /** M(D) factor según ITU-R aproximado: M(D) = M3000·(D/3000)^0.24 */
@@ -138,6 +141,7 @@ export function computeLink(
     fotLink,
     points3D,
     virtualHeight: hVirtual,
+    faradayDeg: null,
   };
 }
 
