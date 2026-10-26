@@ -101,6 +101,36 @@ import {
 // maxTextureSize para elegirla vs el fallback earth-night.jpg (2048x1024 px).
 const NIGHT_HIRES_MIN_MAX_TEXTURE = 8192;
 
+const SOLAR_WIND_STOPS: { t: number; c: [number, number, number] }[] = [
+  { t: 0.0, c: [0.45, 0.22, 0.95] },
+  { t: 0.32, c: [0.95, 0.25, 0.8] },
+  { t: 0.55, c: [1.0, 0.48, 0.16] },
+  { t: 0.78, c: [1.0, 0.78, 0.28] },
+  { t: 1.0, c: [1.0, 0.95, 0.78] },
+];
+
+function solarWindColor(
+  speed: number,
+  bz: number,
+  density: number,
+  seed: number,
+): [number, number, number] {
+  const speedN = Math.max(0, Math.min(1, (speed - 250) / 650));
+  const southN = Math.max(0, Math.min(1, -bz / 15));
+  const t = Math.max(0, Math.min(1, 0.28 + 0.55 * speedN - 0.16 * southN + 0.13 * seed));
+  let i = 0;
+  while (i < SOLAR_WIND_STOPS.length - 2 && t > SOLAR_WIND_STOPS[i + 1].t) i++;
+  const a = SOLAR_WIND_STOPS[i];
+  const b = SOLAR_WIND_STOPS[i + 1];
+  const f = (t - a.t) / (b.t - a.t + 1e-6);
+  const bright = 0.86 + 0.14 * Math.max(0, Math.min(1, density / 20));
+  return [
+    (a.c[0] + f * (b.c[0] - a.c[0])) * bright,
+    (a.c[1] + f * (b.c[1] - a.c[1])) * bright,
+    (a.c[2] + f * (b.c[2] - a.c[2])) * bright,
+  ];
+}
+
 export interface SceneCallbacks {
   onStationPick?: (code: string | null) => void;
   onLinkResult?: (r: LinkResult | null) => void;
@@ -181,6 +211,7 @@ export default function IonosphereScene(props: Props) {
     rings?: THREE.Group;
     sunGlow?: { core: THREE.Sprite; halo: THREE.Sprite };
     starMat?: THREE.ShaderMaterial;
+    starPoints?: THREE.Points;
     linkObj?: { mesh: THREE.Mesh; mat: THREE.ShaderMaterial };
     // W-4 misc: el pase god-rays pinta su propio sol; los sprites se
     // apagan cuando él pinta (1 frame de retardo, imperceptible).
@@ -364,16 +395,33 @@ export default function IonosphereScene(props: Props) {
       }
       const riverGeo = new THREE.BufferGeometry();
       riverGeo.setAttribute("position", new THREE.BufferAttribute(riverPos, 3));
+      riverGeo.setAttribute(
+        "color",
+        new THREE.BufferAttribute(new Float32Array(RN * 3), 3),
+      );
       const riverMat = new THREE.PointsMaterial({
-        color: 0x66ccff,
-        size: 0.12,
+        color: 0xffffff,
+        vertexColors: true,
+        size: 0.17,
         transparent: true,
-        opacity: 0.7,
+        opacity: 0.9,
         depthWrite: false,
         blending: THREE.AdditiveBlending,
       });
       const river = new THREE.Points(riverGeo, riverMat);
       river.frustumCulled = false;
+      const riverGlowMat = new THREE.PointsMaterial({
+        color: 0xffffff,
+        vertexColors: true,
+        size: 0.38,
+        transparent: true,
+        opacity: 0.16,
+        depthWrite: false,
+        blending: THREE.AdditiveBlending,
+      });
+      const riverGlow = new THREE.Points(riverGeo, riverGlowMat);
+      riverGlow.frustumCulled = false;
+      river.add(riverGlow);
       magnetoSun.add(river);
       // Líneas dipolares estáticas (L 3/4/5.6/8.5 × 6 meridianos; la cola
       // real exige Tsyganenko v2 — declarado, no se estiran aquí).
@@ -565,6 +613,7 @@ export default function IonosphereScene(props: Props) {
         rings: rings.group,
         sunGlow,
         starMat: stars.mat,
+        starPoints: stars.points,
         magneto: {
           group: magnetoGroup,
           sunGroup: magnetoSun,
@@ -890,6 +939,12 @@ export default function IonosphereScene(props: Props) {
                 };
                 addLines(mesh.rings);
                 addLines(mesh.meridians);
+                const col = mg.river.geometry.getAttribute("color") as THREE.BufferAttribute;
+                for (let i = 0; i < RN; i++) {
+                  const [r, g, b] = solarWindColor(v, Bz, n, (i * 0.61803398875) % 1);
+                  col.setXYZ(i, r, g, b);
+                }
+                col.needsUpdate = true;
               }
               mg.sunGroup.quaternion.setFromUnitVectors(
                 new THREE.Vector3(1, 0, 0),
@@ -1327,6 +1382,9 @@ export default function IonosphereScene(props: Props) {
           S.current.stationsObj.points.visible = propsRef.current.settings.showStations;
         }
         if (S.current?.starMat) S.current.starMat.uniforms.uTime.value = t;
+        if (S.current?.starPoints) {
+          S.current.starPoints.visible = propsRef.current.settings.showStars;
+        }
         if (S.current?.linkObj) {
           S.current.linkObj.mat.uniforms.uTime.value = t;
           S.current.linkObj.mesh.visible = propsRef.current.settings.showLink;

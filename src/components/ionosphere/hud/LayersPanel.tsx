@@ -1,6 +1,6 @@
 "use client";
 
-import { Layers, Cloud, Sparkles, Radio, Orbit, Mountain, Eye, Disc3, Sun, Boxes, Circle, Rocket, Zap, Sunrise, CloudRainWind, Activity, Donut, Satellite, CircleDot } from "lucide-react";
+import { Layers, Cloud, Star, Sparkles, Radio, Orbit, Mountain, Eye, Disc3, Sun, Boxes, Circle, Rocket, Zap, Sunrise, CloudRainWind, Activity, Donut, Satellite, CircleDot } from "lucide-react";
 import { SceneSettings, IonosondeData } from "../types";
 import { dynamicPressure, shueR0, tailStretch } from "@/lib/iono/magnetosphere";
 import { PanelBox, SourceDot } from "./SpaceWeatherPanel";
@@ -46,6 +46,12 @@ export default function LayersPanel({ settings, onChange, ionosondes, fps, sw }:
           label="Nubes"
           checked={settings.clouds}
           onChange={(v) => onChange({ clouds: v })}
+        />
+        <Toggle
+          icon={<Star size={12} />}
+          label="Estrellas"
+          checked={settings.showStars}
+          onChange={(v) => onChange({ showStars: v })}
         />
         <Toggle
           icon={<Sparkles size={12} />}
@@ -236,6 +242,17 @@ export default function LayersPanel({ settings, onChange, ionosondes, fps, sw }:
           <button
             key={m}
             onClick={() => onChange({ volumeMode: m })}
+            title={
+              m === "density"
+                ? "Color por densidad electronica del volumen."
+                : "Modelo Chapman de capas ionosfericas."
+            }
+            aria-label={
+              m === "density"
+                ? "Density: color por densidad electronica"
+                : "Chapman: modelo de capas ionosfericas"
+            }
+            aria-pressed={settings.volumeMode === m}
             className={`text-[10px] px-2 py-1 rounded-md ring-1 transition-colors ${
               settings.volumeMode === m
                 ? "bg-cyan-500/20 text-cyan-200 ring-cyan-400/40"
@@ -261,6 +278,33 @@ export default function LayersPanel({ settings, onChange, ionosondes, fps, sw }:
   );
 }
 
+const TOGGLE_HINTS: Record<string, string> = {
+  Nubes: "Capa de nubes troposfericas con textura dia/noche.",
+  Estrellas: "Fondo estrellado; desactivalo para ver la escena sobre negro.",
+  Aurora: "Ovalos aurorales y emision en latitudes altas.",
+  "Enlace HF": "Trazado del enlace entre ionosondas: saltos, MUF y absorcion.",
+  "Modo cine": "Rotacion automatica de la camara alrededor del globo.",
+  "Shell foF2": "Superficie de foF2 derivada de las ionosondas.",
+  "God rays": "Rayos crepusculares y dispersion volumetrica del Sol.",
+  Volumen: "Volumen 3D de densidad electronica reconstruido.",
+  Ionosondas: "Estaciones GIRO y sus etiquetas; sirven de origen/destino HF.",
+  "Ref shells": "Cascaras de referencia a altitudes ionosfericas fijas.",
+  "Iso bands": "Isolineas de frecuencia critica y bandas de propagacion.",
+  Etiquetas: "Etiquetas geograficas y de estaciones.",
+  Magnetosfera: "Magnetopausa, lineas dipolares y viento solar animado.",
+  "CME ENLIL": "Frente de CME y llegada geoefectiva segun ENLIL.",
+  "Flash X-ray": "Destello solar y absorcion ionosferica asociada (SID).",
+  WSPRnet: "Arcos de spots WSPR de transmisor a receptor por banda.",
+  "Grey line": "Terminador solar y franja de propagacion en el crepusculo.",
+  Fadeout: "Atenuacion y absorcion de la senal HF (PCA y region D).",
+  Lightning: "Tormentas NWS, trazas whistler y sprites conjugados.",
+  Electrojets: "Corriente electrojet auroral y actividad AE.",
+  "Dst ring": "Anillo de corriente ecuatorial y valor Dst.",
+  Belts: "Cinturones de Van Allen: protones internos y electrones externos.",
+  "Eco 2026": "Nube de satelites en orbita a partir de elementos TLE.",
+  "Anillo 1963": "Anillo de particulas West Ford 1963, ilustrativo.",
+};
+
 function Toggle({
   icon,
   label,
@@ -272,9 +316,13 @@ function Toggle({
   checked: boolean;
   onChange: (v: boolean) => void;
 }) {
+  const hint = TOGGLE_HINTS[label] ?? label;
   return (
     <button
       onClick={() => onChange(!checked)}
+      title={hint}
+      aria-label={`${label}: ${hint}`}
+      aria-pressed={checked}
       className={`flex items-center gap-1.5 text-xs rounded-lg px-2 py-1.5 transition-colors ${
         checked
           ? "bg-cyan-500/15 text-cyan-200 ring-1 ring-cyan-400/30"

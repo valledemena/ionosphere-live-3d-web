@@ -235,6 +235,7 @@ export interface IonosondeData {
 
 export interface SceneSettings {
   clouds: boolean;
+  showStars: boolean;
   atmoQuality: "low" | "medium" | "high";
   showAurora: boolean;
   showShell: boolean;
@@ -299,6 +300,7 @@ export interface SceneSettings {
 
 export const DEFAULT_SETTINGS: SceneSettings = {
   clouds: true,
+  showStars: true,
   atmoQuality: "high",
   showAurora: true,
   showShell: true,

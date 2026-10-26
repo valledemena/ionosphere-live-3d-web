@@ -2,7 +2,9 @@
 // ionosphere-live-3d — /api/satellites: shell data layer (drop 317, F2b #10).
 //
 // Cabecera de la cadena por-origen adjudicada (316 §4, estrategia de 315 §6):
-// CelesTrak (vivo) -> SatNOGS (vivo) -> snapshot fechado rotulado -> unavailable.
+// CelesTrak (vivo) -> snapshot completo fechado -> SatNOGS (vivo, subconjunto)
+// -> unavailable. SatNOGS solo trae ~1.7k objetos con transmisor registrado;
+// el snapshot completo (~15.9k) conserva la densidad visual de ECO 2026.
 // La logica pura vive en @/lib/iono/satellites/catalog (cero red, testeable);
 // esta ruta solo inyecta los fetchers, la cache TTL y la ciudadania.
 //

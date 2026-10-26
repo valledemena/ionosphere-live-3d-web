@@ -13,9 +13,9 @@ pure chain in `catalog.ts` + TU in `catalog.test.ts`).
 Payload: `{ source, sourceLabel, attribution, fetchedAt, count, dropped, records[] }`
 with `records = { noradId, name, line1, line2 }` (verbatim TLE lines).
 
-## Sources and per-origin chain (adjudicated 316 §4)
+## Sources and per-origin chain (current, post drop-356 local work)
 
-Order: **celestrak (live) -> satnogs (live) -> snapshot (dated) -> unavailable**.
+Order: **celestrak (live) -> snapshot (dated) -> satnogs (live) -> unavailable**.
 
 - **CelesTrak** GP `GROUP=active` (TLE): primary live source of the full
   active catalog (15,927 objects at snapshot time). Egress is per-environment
@@ -23,13 +23,15 @@ Order: **celestrak (live) -> satnogs (live) -> snapshot (dated) -> unavailable**
   both 2026-10-17 shots incl. GLM's parallel corroboration) and GREEN from the
   MUSE sandbox. The live route is **kept per-origin** and re-activates on its
   own when the platform egress changes (failure window 30 min, payload TTL 6 h).
-- **SatNOGS** DB `/api/tle/` (TLE full dump): live source measured **GREEN in
-  4/4 environments** (MUSE sandbox, GLM local, GLM gateway, deploy x2) — the
-  reliable live path in the deploy (~1.7k records; measured 2026-10-17:
-  1,733 records / 536,547 B / 0.68 s). Attribution per its API.
 - **Snapshot** `active-2026-10-17.tle`: frozen CelesTrak capture, labeled with
-  its date and `(no live)`, **never** "live" (316 §4.2). Serves when no live
-  source is reachable (offline, egress cut).
+  its date and `(no live)`, **never** "live" (316 §4.2). It is the **first
+  fallback** after CelesTrak because it preserves the full active catalog and
+  the visual density of ECO 2026 (15,927 objects). It also serves offline or
+  when platform egress is cut.
+- **SatNOGS** DB `/api/tle/` (TLE full dump): secondary live path, only used
+  if the snapshot is missing/unreadable. It contains ~1.7k objects with a
+  registered transmitter (measured 2026-10-17: 1,733 records / 536,547 B /
+  0.68 s), not the full active catalog. Attribution per its API.
 - **unavailable**: honest null state (`records: []`), never a fabricated curve
   (312 Q3-4). Not cached (a transient outage must not freeze — voyager rule).
 

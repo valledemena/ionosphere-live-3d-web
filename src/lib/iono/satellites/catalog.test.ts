@@ -164,7 +164,7 @@ describe("acquireCatalog (cadena por-origen)", () => {
     expect(snapTouched).toBe(false);
   });
 
-  it("fallo de CelesTrak abre ventana negativa y cae a SatNOGS", async () => {
+  it("fallo de CelesTrak abre ventana negativa y, sin snapshot, cae a SatNOGS", async () => {
     let failed = 0;
     const p = await acquireCatalog(deps({
       fetchCelestrak: async () => { throw new Error("down"); },
@@ -173,6 +173,16 @@ describe("acquireCatalog (cadena por-origen)", () => {
     }));
     expect(p.source).toBe("satnogs");
     expect(failed).toBe(1);
+  });
+
+  it("con snapshot disponible, prefiere el catalogo completo a SatNOGS parcial", async () => {
+    const p = await acquireCatalog(deps({
+      fetchCelestrak: async () => null,
+      fetchSatnogs: async () => PARSED,
+      loadSnapshot: () => PARSED,
+    }));
+    expect(p.source).toBe("snapshot");
+    expect(p.sourceLabel).toContain("(no live)");
   });
 
   it("catalogo vacio cuenta como fallo del origen", async () => {

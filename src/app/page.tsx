@@ -40,7 +40,6 @@ import {
   AuroraData,
   IonosondeData,
   SceneSettings,
-  DEFAULT_SETTINGS,
   replayAdvance,
 } from "@/components/ionosphere/types";
 import { LinkResult } from "@/lib/iono/hf";
@@ -49,6 +48,7 @@ import { RING_LABEL } from "@/lib/iono/satellites/ring1963";
 import { type AlertSnapshot } from "@/lib/iono/alerts";
 import type { AlertPrefs } from "@/lib/iono/alertPrefs";
 import { useAlerts } from "@/hooks/use-alerts";
+import { usePersistedSceneSettings } from "@/hooks/use-persisted-scene-settings";
 import { tourCount, tourKey } from "@/lib/iono/tour";
 import { getSunInfo } from "@/lib/iono/solar";
 import { useNow } from "@/hooks/use-now";
@@ -93,7 +93,7 @@ export default function Home() {
   const [msis, setMsis] = useState<MsisData | null>(null);
   const [aurora, setAurora] = useState<AuroraData | null>(null);
   const [ionos, setIonos] = useState<IonosondeData | null>(null);
-  const [settings, setSettings] = useState<SceneSettings>(DEFAULT_SETTINGS);
+  const [settings, onSettingsChange] = usePersistedSceneSettings();
   const [txCode, setTxCode] = useState<string | null>(null);
   const [rxCode, setRxCode] = useState<string | null>(null);
   const [linkFreq, setLinkFreq] = useState(14.0);
@@ -285,10 +285,6 @@ export default function Home() {
     },
     [txCode, rxCode]
   );
-
-  const onSettingsChange = useCallback((patch: Partial<SceneSettings>) => {
-    setSettings((s) => ({ ...s, ...patch }));
-  }, []);
 
   // W-4 C2: avance automático del replay (espejo App.cpp:2139-2141).
   useEffect(() => {

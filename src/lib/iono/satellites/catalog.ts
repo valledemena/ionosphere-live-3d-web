@@ -2,7 +2,10 @@
 // ionosphere-live-3d — shell data layer: live TLE catalog (drop 317, F2b #10).
 //
 // Cadena por-origen adjudicada en el veredicto 316 §4 (estrategia de 315 §6):
-//   CelesTrak (vivo) -> SatNOGS (vivo) -> snapshot fechado rotulado -> unavailable.
+//   CelesTrak (vivo) -> snapshot completo fechado -> SatNOGS (vivo, subconjunto)
+//   -> unavailable. El volcado de SatNOGS solo cubre satelites con transmisor
+//   registrado (~1.7k), no el catalogo activo completo; para ECO 2026 se prefiere
+//   el snapshot completo y se rotula como frozen (jamas como live).
 // Reglas de honestidad: el snapshot JAMAS lleva etiqueta "live" (lleva su fecha);
 // "unavailable" es un estado nulo honesto, nunca un dato ficticio. La cache solo
 // guarda catalogos no vacios (nunca guardar vacio como bueno — patron fallback).
@@ -196,6 +199,8 @@ export async function acquireCatalog(deps: AcquireDeps): Promise<CatalogPayload>
     if (ct && ct.records.length > 0) return buildPayload("celestrak", ct, now());
     deps.markCelestrakFailed?.();
   }
+  const snap = deps.loadSnapshot();
+  if (snap && snap.records.length > 0) return buildPayload("snapshot", snap, now());
   let sn: ParsedCatalog | null = null;
   try {
     sn = await deps.fetchSatnogs();
@@ -203,8 +208,6 @@ export async function acquireCatalog(deps: AcquireDeps): Promise<CatalogPayload>
     sn = null;
   }
   if (sn && sn.records.length > 0) return buildPayload("satnogs", sn, now());
-  const snap = deps.loadSnapshot();
-  if (snap && snap.records.length > 0) return buildPayload("snapshot", snap, now());
   return buildPayload("unavailable", { records: [], dropped: 0 }, now());
 }
 
