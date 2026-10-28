@@ -191,7 +191,7 @@ export function cmeArrived(
 /** Cuenta atras honesta en ASCII (doctrina del canal). */
 export function cmeCountdown(arrivalMs: number, nowMs: number): string {
   const d = arrivalMs - nowMs;
-  if (Math.abs(d) < 60_000) return "ahora";
+  if (Math.abs(d) < 60_000) return "now";
   const past = d < 0;
   const mins = Math.floor(Math.abs(d) / 60_000);
   const dd = Math.floor(mins / 1440);
@@ -199,7 +199,7 @@ export function cmeCountdown(arrivalMs: number, nowMs: number): string {
   const mm = mins % 60;
   const body =
     dd > 0 ? `${dd} d ${hh} h` : hh > 0 ? `${hh} h ${mm} min` : `${mm} min`;
-  return past ? `llego hace ${body}` : `en ${body}`;
+  return past ? `arrived ${body} ago` : `in ${body}`;
 }
 
 /**

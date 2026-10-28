@@ -27,13 +27,13 @@ export default function RadioPanel({ link, tx, rx, freq, onFreq, sw, utcSec, set
   );
   if (!tx || !rx || !link) {
     return (
-      <PanelBox title="Radio · enlace HF">
+      <PanelBox title="Radio · HF link">
         <div className="text-xs text-slate-500 py-4 text-center leading-relaxed">
           <Radio size={20} className="mx-auto mb-2 text-slate-600" />
-          Haz clic en dos ionosondas del globo
+          Click two ionosondes on the globe
           <br />
-          (1ª = <span className="text-cyan-300">TX</span>, 2ª ={" "}
-          <span className="text-amber-300">RX</span>) para trazar el circuito.
+          (1st = <span className="text-cyan-300">TX</span>, 2nd ={" "}
+          <span className="text-amber-300">RX</span>) to trace the circuit.
         </div>
         {slice}
       </PanelBox>
@@ -48,7 +48,7 @@ export default function RadioPanel({ link, tx, rx, freq, onFreq, sw, utcSec, set
   const absorb = dRegionAbsorptionDb(cosChi, sw?.xray ?? 1e-8, sw?.kp ?? 2);
 
   return (
-    <PanelBox title="Radio · enlace HF">
+    <PanelBox title="Radio · HF link">
       <div className="flex items-center gap-2 text-xs">
         <span className="font-mono text-cyan-300">{tx.code}</span>
         <span className="text-slate-500 truncate flex-1">{tx.name}</span>
@@ -58,18 +58,18 @@ export default function RadioPanel({ link, tx, rx, freq, onFreq, sw, utcSec, set
       </div>
 
       <div className="grid grid-cols-3 gap-2 my-2.5 text-center">
-        <Metric label="Distancia" value={`${link.distanceKm.toFixed(0)}`} unit="km" />
-        <Metric label="Saltos" value={`${link.hops.length}`} unit="× ~2.9 Mm" />
-        <Metric label="Elevación" value={`${link.hops[0].elevationDeg.toFixed(1)}`} unit="°" />
+        <Metric label="Distance" value={`${link.distanceKm.toFixed(0)}`} unit="km" />
+        <Metric label="Hops" value={`${link.hops.length}`} unit="× ~2.9 Mm" />
+        <Metric label="Elevation" value={`${link.hops[0].elevationDeg.toFixed(1)}`} unit="°" />
         <Metric label="MUF(3000)F2" value={link.mufLink.toFixed(1)} unit="MHz" accent="text-cyan-300" />
         <Metric label="FOT" value={link.fotLink.toFixed(1)} unit="MHz" accent="text-emerald-300" />
-        <Metric label="LUF est." value={luf.toFixed(1)} unit="MHz" accent="text-orange-300" />
+        <Metric label="Est. LUF" value={luf.toFixed(1)} unit="MHz" accent="text-orange-300" />
       </div>
 
       {/* Drop 356: rotación Faraday (V6 del scout: toLocaleString, vueltas
           con 1 decimal, absoluto en title, mod 360 como observable). */}
       {link.faradayDeg == null ? (
-        <div className="text-[10px] text-slate-500 mb-2">Rotación Faraday: sin volumen</div>
+        <div className="text-[10px] text-slate-500 mb-2">Faraday rotation: no volume</div>
       ) : (
         (() => {
           const abs = Math.abs(link.faradayDeg);
@@ -78,12 +78,12 @@ export default function RadioPanel({ link, tx, rx, freq, onFreq, sw, utcSec, set
           return (
             <div
               className="text-[10px] font-mono text-slate-300 mb-2"
-              title={`≡ ${mod.toFixed(1)}° (mod 360) · absoluto ${abs.toFixed(1)}° · signo = sentido de B a lo largo del rayo`}
+              title={`≡ ${mod.toFixed(1)}° (mod 360) · absolute ${abs.toFixed(1)}° · sign = B direction along the ray`}
             >
-              Faraday (ida) {abs.toLocaleString("es-ES", { maximumFractionDigits: 0 })}° ·{" "}
-              {turns.toFixed(1)} vueltas · @{freq.toFixed(1)} MHz
+              Faraday (outbound) {abs.toLocaleString("es-ES", { maximumFractionDigits: 0 })}° ·{" "}
+              {turns.toFixed(1)} turns · @{freq.toFixed(1)} MHz
               <div className="text-[9px] text-slate-500 font-normal">
-                1/f² · dipolo IGRF grado 1 (2025.0) · integrado en el rayo
+                1/f² · IGRF degree-1 dipole (2025.0) · integrated along the ray
               </div>
             </div>
           );
@@ -93,13 +93,13 @@ export default function RadioPanel({ link, tx, rx, freq, onFreq, sw, utcSec, set
       {absorb > 1 && (
         <div className="flex items-start gap-1.5 text-[10px] text-amber-300/90 bg-amber-500/10 rounded-lg px-2 py-1.5 mb-2">
           <Info size={11} className="mt-0.5 shrink-0" />
-          Absorción D estimada {absorb.toFixed(1)} dB en el circuito (X-ray {sw?.xray.toExponential(1)} W/m²)
+          Estimated D absorption {absorb.toFixed(1)} dB over the circuit (X-ray {sw?.xray.toExponential(1)} W/m²)
         </div>
       )}
 
       {/* matriz de bandas */}
       <div className="text-[10px] uppercase tracking-wider text-slate-500 mb-1">
-        Bandas — frecuencia de trabajo: {freq.toFixed(1)} MHz
+        Bands — working frequency: {freq.toFixed(1)} MHz
       </div>
       <div className="flex items-center gap-1 mb-2">
         <input
@@ -137,7 +137,7 @@ export default function RadioPanel({ link, tx, rx, freq, onFreq, sw, utcSec, set
       </div>
 
       <div className="mt-2 pt-1.5 border-t border-white/10 text-[10px] text-slate-500">
-        Rumbo {link.bearingAB}° / retorno {link.bearingBA}° · h′ virtual {link.virtualHeight.toFixed(0)} km ·
+        Bearing {link.bearingAB}° / return {link.bearingBA}° · virtual h′ {link.virtualHeight.toFixed(0)} km ·
         MUF/Dudeney M(D)=1490/(hmF2+216)·(D/3000)^0.24 · FOT = 0.85·MUF
       </div>
       {slice}
@@ -197,7 +197,7 @@ function SliceSection({
                     : "bg-white/5 text-slate-400 ring-transparent hover:bg-white/10"
                 }`}
               >
-                {m === "link" ? "Enlace" : m === "manual" ? "Manual A/B" : "Fijo ±2°"}
+                {m === "link" ? "Link" : m === "manual" ? "Manual A/B" : "Fixed ±2°"}
               </button>
             ))}
           </div>
@@ -214,7 +214,7 @@ function SliceSection({
             </div>
           )}
           {settings.sliceSrc === "link" && !hasLink && (
-            <div className="text-[10px] text-slate-500">Necesita enlace TX→RX (o usa Manual A/B).</div>
+            <div className="text-[10px] text-slate-500">Needs a TX→RX link (or use Manual A/B).</div>
           )}
         </div>
       )}

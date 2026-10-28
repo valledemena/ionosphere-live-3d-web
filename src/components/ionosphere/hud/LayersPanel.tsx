@@ -23,13 +23,13 @@ function MagnetoReadout({
 }: {
   sw?: { bz: number; speed: number; density: number } | null;
 }) {
-  if (!sw || !(sw.speed > 0)) return <span>Bz/Dp: sin viento</span>;
+  if (!sw || !(sw.speed > 0)) return <span>Bz/Dp: no wind</span>;
   const n = sw.density > 0 ? sw.density : 5;
   const Dp = dynamicPressure(n, sw.speed);
   const r0 = shueR0(sw.bz, Dp);
   return (
     <span>
-      r0 {r0.toFixed(1)} R_E · Dp {Dp.toFixed(1)} nPa · cola ×{tailStretch(sw.bz).toFixed(2)} (param)
+      r0 {r0.toFixed(1)} R_E · Dp {Dp.toFixed(1)} nPa · tail ×{tailStretch(sw.bz).toFixed(2)} (param)
     </span>
   );
 }
@@ -39,17 +39,17 @@ export default function LayersPanel({ settings, onChange, ionosondes, fps, sw }:
   const n = ionosondes?.stations.length ?? 0;
   const withData = ionosondes?.stations.filter((s) => (s.foF2 ?? 0) > 0).length ?? 0;
   return (
-    <PanelBox title="Capas" badge={<span className="text-[10px] text-slate-500 font-mono">{fps.toFixed(0)} fps</span>}>
+    <PanelBox title="Layers" badge={<span className="text-[10px] text-slate-500 font-mono">{fps.toFixed(0)} fps</span>}>
       <div className="grid grid-cols-2 gap-x-3 gap-y-1.5">
         <Toggle
           icon={<Cloud size={12} />}
-          label="Nubes"
+          label="Clouds"
           checked={settings.clouds}
           onChange={(v) => onChange({ clouds: v })}
         />
         <Toggle
           icon={<Star size={12} />}
-          label="Estrellas"
+          label="Stars"
           checked={settings.showStars}
           onChange={(v) => onChange({ showStars: v })}
         />
@@ -61,13 +61,13 @@ export default function LayersPanel({ settings, onChange, ionosondes, fps, sw }:
         />
         <Toggle
           icon={<Radio size={12} />}
-          label="Enlace HF"
+          label="HF link"
           checked={settings.showLink}
           onChange={(v) => onChange({ showLink: v })}
         />
         <Toggle
           icon={<Orbit size={12} />}
-          label="Modo cine"
+          label="Cinema mode"
           checked={settings.cinema}
           onChange={(v) => onChange({ cinema: v })}
         />
@@ -85,13 +85,13 @@ export default function LayersPanel({ settings, onChange, ionosondes, fps, sw }:
         />
         <Toggle
           icon={<Boxes size={12} />}
-          label="Volumen"
+          label="Volume"
           checked={settings.showVolume}
           onChange={(v) => onChange({ showVolume: v })}
         />
         <Toggle
           icon={<Eye size={12} />}
-          label="Ionosondas"
+          label="Ionosondes"
           checked={settings.showStations}
           onChange={(v) => onChange({ showStations: v })}
         />
@@ -109,13 +109,13 @@ export default function LayersPanel({ settings, onChange, ionosondes, fps, sw }:
         />
         <Toggle
           icon={<Mountain size={12} />}
-          label="Etiquetas"
+          label="Labels"
           checked={settings.showLabels}
           onChange={(v) => onChange({ showLabels: v })}
         />
         <Toggle
           icon={<Orbit size={12} />}
-          label="Magnetosfera"
+          label="Magnetosphere"
           checked={settings.showMagnetosphere}
           onChange={(v) => onChange({ showMagnetosphere: v })}
         />
@@ -176,13 +176,13 @@ export default function LayersPanel({ settings, onChange, ionosondes, fps, sw }:
         {/* W-4 F2b #10 (ruling 320): eco 2026 vivo + anillo 1963 declarado. */}
         <Toggle
           icon={<Satellite size={12} />}
-          label="Eco 2026"
+          label="Echo 2026"
           checked={settings.showSatellites}
           onChange={(v) => onChange({ showSatellites: v })}
         />
         <Toggle
           icon={<CircleDot size={12} />}
-          label="Anillo 1963"
+          label="Ring 1963"
           checked={settings.showRing1963}
           onChange={(v) => onChange({ showRing1963: v })}
         />
@@ -195,7 +195,7 @@ export default function LayersPanel({ settings, onChange, ionosondes, fps, sw }:
 
       <Slider
         icon={<Mountain size={12} />}
-        label="Exageración alt."
+        label="Altitude exaggeration"
         value={settings.exaggeration}
         min={1}
         max={5}
@@ -205,7 +205,7 @@ export default function LayersPanel({ settings, onChange, ionosondes, fps, sw }:
       />
       <Slider
         icon={<Layers size={12} />}
-        label="Opacidad shell"
+        label="Shell opacity"
         value={settings.shellOpacity}
         min={0.1}
         max={1}
@@ -215,7 +215,7 @@ export default function LayersPanel({ settings, onChange, ionosondes, fps, sw }:
       />
 
       <div className="mt-2 pt-2 border-t border-white/10 text-[11px] text-slate-400 flex items-center justify-between">
-        <span>Ionosondas GIRO</span>
+        <span>GIRO ionosondes</span>
         <span className="flex items-center gap-1.5">
           <SourceDot source={ionosondes ? ionosondes.source : ""} />
           {withData}/{n}
@@ -244,13 +244,13 @@ export default function LayersPanel({ settings, onChange, ionosondes, fps, sw }:
             onClick={() => onChange({ volumeMode: m })}
             title={
               m === "density"
-                ? "Color por densidad electronica del volumen."
-                : "Modelo Chapman de capas ionosfericas."
+                ? "Color by electron density of the volume."
+                : "Chapman model of ionospheric layers."
             }
             aria-label={
               m === "density"
-                ? "Density: color por densidad electronica"
-                : "Chapman: modelo de capas ionosfericas"
+                ? "Density: color by electron density"
+                : "Chapman: ionospheric layer model"
             }
             aria-pressed={settings.volumeMode === m}
             className={`text-[10px] px-2 py-1 rounded-md ring-1 transition-colors ${
@@ -266,7 +266,7 @@ export default function LayersPanel({ settings, onChange, ionosondes, fps, sw }:
 
       <Slider
         icon={<Boxes size={12} />}
-        label="Opacidad volumen"
+        label="Volume opacity"
         value={settings.volumeOpacity}
         min={0}
         max={2.5}
@@ -279,30 +279,30 @@ export default function LayersPanel({ settings, onChange, ionosondes, fps, sw }:
 }
 
 const TOGGLE_HINTS: Record<string, string> = {
-  Nubes: "Capa de nubes troposfericas con textura dia/noche.",
-  Estrellas: "Fondo estrellado; desactivalo para ver la escena sobre negro.",
-  Aurora: "Ovalos aurorales y emision en latitudes altas.",
-  "Enlace HF": "Trazado del enlace entre ionosondas: saltos, MUF y absorcion.",
-  "Modo cine": "Rotacion automatica de la camara alrededor del globo.",
-  "Shell foF2": "Superficie de foF2 derivada de las ionosondas.",
-  "God rays": "Rayos crepusculares y dispersion volumetrica del Sol.",
-  Volumen: "Volumen 3D de densidad electronica reconstruido.",
-  Ionosondas: "Estaciones GIRO y sus etiquetas; sirven de origen/destino HF.",
-  "Ref shells": "Cascaras de referencia a altitudes ionosfericas fijas.",
-  "Iso bands": "Isolineas de frecuencia critica y bandas de propagacion.",
-  Etiquetas: "Etiquetas geograficas y de estaciones.",
-  Magnetosfera: "Magnetopausa, lineas dipolares y viento solar animado.",
-  "CME ENLIL": "Frente de CME y llegada geoefectiva segun ENLIL.",
-  "Flash X-ray": "Destello solar y absorcion ionosferica asociada (SID).",
-  WSPRnet: "Arcos de spots WSPR de transmisor a receptor por banda.",
-  "Grey line": "Terminador solar y franja de propagacion en el crepusculo.",
-  Fadeout: "Atenuacion y absorcion de la senal HF (PCA y region D).",
-  Lightning: "Tormentas NWS, trazas whistler y sprites conjugados.",
-  Electrojets: "Corriente electrojet auroral y actividad AE.",
-  "Dst ring": "Anillo de corriente ecuatorial y valor Dst.",
-  Belts: "Cinturones de Van Allen: protones internos y electrones externos.",
-  "Eco 2026": "Nube de satelites en orbita a partir de elementos TLE.",
-  "Anillo 1963": "Anillo de particulas West Ford 1963, ilustrativo.",
+  Clouds: "Tropospheric cloud layer with day/night texture.",
+  Stars: "Starfield background; turn it off to see the scene over black.",
+  Aurora: "Auroral ovals and high-latitude emission.",
+  "HF link": "HF path between ionosondes: hops, MUF and absorption.",
+  "Cinema mode": "Automatic camera rotation around the globe.",
+  "Shell foF2": "foF2 surface derived from the ionosondes.",
+  "God rays": "Crepuscular rays and volumetric solar scattering.",
+  Volume: "Reconstructed 3D electron density volume.",
+  Ionosondes: "GIRO stations and their labels; they act as HF origin/destination.",
+  "Ref shells": "Reference shells at fixed ionospheric altitudes.",
+  "Iso bands": "Critical-frequency isolines and propagation bands.",
+  Labels: "Geographic and station labels.",
+  Magnetosphere: "Magnetopause, dipolar field lines and animated solar wind.",
+  "CME ENLIL": "CME front and geo-effective arrival per ENLIL.",
+  "Flash X-ray": "Solar flare and associated ionospheric absorption (SID).",
+  WSPRnet: "WSPR spot arcs from transmitter to receiver, per band.",
+  "Grey line": "Solar terminator and twilight propagation band.",
+  Fadeout: "HF signal fading and absorption (PCA and D region).",
+  Lightning: "NWS storms, whistler traces and conjugate sprites.",
+  Electrojets: "Auroral electrojet current and AE activity.",
+  "Dst ring": "Equatorial ring current and Dst value.",
+  Belts: "Van Allen belts: inner protons and outer electrons.",
+  "Echo 2026": "Satellite cloud in orbit from TLE elements.",
+  "Ring 1963": "West Ford 1963 particle ring, illustrative.",
 };
 
 function Toggle({

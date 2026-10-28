@@ -1946,5 +1946,5 @@ export default function IonosphereScene(props: Props) {
     // eslint-disable-next-line react-hooks/exhaustive-deps -- callbacks vía propsRef (ref-latest); sceneReady (drop 349): rebuild al terminar init
   }, [props.txCode, props.rxCode, props.linkFreq, props.ionosondes, props.settings.exaggeration, props.settings.timeMode, props.settings.replayMinutes, sceneReady]);
 
-  return <div ref={mountRef} className="absolute inset-0" aria-label="Escena 3D del globo ionosférico" />;
+  return <div ref={mountRef} className="absolute inset-0" aria-label="3D ionospheric globe scene" />;
 }

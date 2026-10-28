@@ -143,10 +143,10 @@ describe("progreso y llegada (O1.3/O1.5)", () => {
     expect(cmeArrived(T0, TA, TA)).toBe(true);
   });
   it("cuenta atras honesta", () => {
-    expect(cmeCountdown(TA, TA)).toBe("ahora");
-    expect(cmeCountdown(TA, TA - 30 * 60_000)).toBe("en 30 min");
-    expect(cmeCountdown(TA, TA - 50 * 3600_000)).toBe("en 2 d 2 h");
-    expect(cmeCountdown(TA, TA + 3 * 3600_000)).toBe("llego hace 3 h 0 min");
+    expect(cmeCountdown(TA, TA)).toBe("now");
+    expect(cmeCountdown(TA, TA - 30 * 60_000)).toBe("in 30 min");
+    expect(cmeCountdown(TA, TA - 50 * 3600_000)).toBe("in 2 d 2 h");
+    expect(cmeCountdown(TA, TA + 3 * 3600_000)).toBe("arrived 3 h 0 min ago");
   });
   it("factor xN del barrido (O1.5)", () => {
     // Transito del fixture: 50.3 h comprimidas a 8 s -> x22635.

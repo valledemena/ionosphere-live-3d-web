@@ -65,7 +65,7 @@ describe("buildRing1963", () => {
 
   it("etiqueta exacta del ruling 320 (dos sitios: panel + leyenda)", () => {
     expect(RING_LABEL).toBe(
-      "West Ford 1963 — reconstrucción declarada (sin datos vivos)",
+      "West Ford 1963 - declared reconstruction (no live data)",
     );
   });
 });

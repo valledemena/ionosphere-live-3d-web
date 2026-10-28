@@ -6,10 +6,16 @@ import { IDEAS, FINDINGS, DATA_SOURCES_STATUS, countIdeasByStatus, REVIEW_SNAPSH
 
 const CAT_LABEL: Record<string, string> = {
   visual: "Visual",
-  fisica: "Física",
-  datos: "Datos",
+  fisica: "Physics",
+  datos: "Data",
   radio: "Radio",
   ux: "UX",
+};
+const STATUS_LABEL: Record<string, string> = {
+  demo: "Demo",
+  parcial: "Partial",
+  propuesta: "Proposed",
+  aplazada: "Deferred",
 };
 const CAT_COLOR: Record<string, string> = {
   visual: "text-fuchsia-300 bg-fuchsia-500/10 ring-fuchsia-400/30",
@@ -41,10 +47,10 @@ export default function IdeasPanel({ open, onClose }: { open: boolean; onClose: 
           <div>
             <h2 className="text-sm font-semibold text-cyan-100 tracking-wide flex items-center gap-2">
               <FlaskConical size={15} className="text-cyan-300" />
-              Exploración de ideas y evaluación
+              Ideas exploration and assessment
             </h2>
             <p className="text-[11px] text-slate-500 mt-0.5">
-              Auditoría src/ drop 356 · {IDEAS.length} ideas · {counts.demo} demo · {counts.parcial} {counts.parcial === 1 ? "parcial" : "parciales"} · {counts.propuesta} {counts.propuesta === 1 ? "propuesta" : "propuestas"} · {counts.aplazada} {counts.aplazada === 1 ? "aplazada" : "aplazadas"}
+              src/ audit drop 356 · {IDEAS.length} ideas · {counts.demo} demo · {counts.parcial} {counts.parcial === 1 ? "partial" : "partials"} · {counts.propuesta} proposed · {counts.aplazada} deferred
             </p>
           </div>
           <button onClick={onClose} className="text-slate-400 hover:text-slate-100 transition-colors p-1.5">
@@ -56,8 +62,8 @@ export default function IdeasPanel({ open, onClose }: { open: boolean; onClose: 
           {(
             [
               ["ideas", "Ideas", <Lightbulb key="i" size={12} />],
-              ["hallazgos", "Hallazgos", <Bug key="b" size={12} />],
-              ["fuentes", "Fuentes de datos", <Database key="d" size={12} />],
+              ["hallazgos", "Findings", <Bug key="b" size={12} />],
+              ["fuentes", "Data sources", <Database key="d" size={12} />],
             ] as const
           ).map(([id, label, icon]) => (
             <button
@@ -78,23 +84,23 @@ export default function IdeasPanel({ open, onClose }: { open: boolean; onClose: 
         <div className="px-5 pb-10">
           {tab === "ideas" && (
             <>
-              <SectionTitle>Implementadas en este explorador web</SectionTitle>
+              <SectionTitle>Implemented in this web explorer</SectionTitle>
               {demos.map((idea) => (
                 <IdeaCard key={idea.id} idea={idea} />
               ))}
               {parciales.length > 0 && (
                 <>
-                  <SectionTitle>Parciales (con lo que falta)</SectionTitle>
+                  <SectionTitle>Partial (with what is missing)</SectionTitle>
                   {parciales.map((idea) => (
                     <IdeaCard key={idea.id} idea={idea} />
                   ))}
                 </>
               )}
-              <SectionTitle>Propuestas para la versión C++/OpenGL</SectionTitle>
+              <SectionTitle>Proposed for the C++/OpenGL version</SectionTitle>
               {propuestas.map((idea) => (
                 <IdeaCard key={idea.id} idea={idea} />
               ))}
-              <SectionTitle>Aplazadas (fuera de paridad, sin ciclo propio)</SectionTitle>
+              <SectionTitle>Deferred (outside parity, no own cycle)</SectionTitle>
               {aplazadas.map((idea) => (
                 <IdeaCard key={idea.id} idea={idea} />
               ))}
@@ -104,7 +110,7 @@ export default function IdeasPanel({ open, onClose }: { open: boolean; onClose: 
           {tab === "hallazgos" && (
             <>
               <p className="text-[11px] text-slate-500 mb-3">
-                Snapshot de la revisión C++ ({REVIEW_SNAPSHOT}) — no describe el estado actual del explorador web.
+                C++ review snapshot ({REVIEW_SNAPSHOT}) — it does not describe the current state of the web explorer.
               </p>
               {FINDINGS.map((f) => (
                 <div key={f.title} className="mb-5">
@@ -121,11 +127,11 @@ export default function IdeasPanel({ open, onClose }: { open: boolean; onClose: 
               ))}
               <div className="rounded-xl bg-amber-500/8 ring-1 ring-amber-400/20 p-3.5 mt-2">
                 <p className="text-[11px] text-amber-200/90 leading-relaxed">
-                  <strong>Orden recomendado de ataque:</strong> primero los bugs baratos de alto valor (resize,
-                  race de GIRO, join de threads, intensity² del bloom, CMake data/), después la atmósfera física
-                  y la aurora volumétrica (mayor impacto visual), y por último ray-tracing HF e ionogramas
-                  sintetizados (mayor valor funcional). El god object App::Impl y la UI inline se refactorizan
-                  cuando se toquen las capas, no antes.
+                  <strong>Recommended order of attack:</strong> first the cheap high-value bugs (resize,
+                  GIRO race, thread join, bloom intensity², CMake data/), then the physical atmosphere
+                  and the volumetric aurora (biggest visual impact), and finally HF ray tracing and
+                  synthesized ionograms (biggest functional value). The App::Impl god object and the inline UI get
+                  refactored when the layers are touched, not before.
                 </p>
               </div>
             </>
@@ -133,7 +139,7 @@ export default function IdeasPanel({ open, onClose }: { open: boolean; onClose: 
 
           {tab === "fuentes" && (
             <>
-              <SectionTitle>Snapshot de la revisión/fuentes ({REVIEW_SNAPSHOT})</SectionTitle>
+              <SectionTitle>Review/sources snapshot ({REVIEW_SNAPSHOT})</SectionTitle>
               <div className="space-y-1.5">
                 {DATA_SOURCES_STATUS.map((s) => (
                   <div
@@ -153,11 +159,11 @@ export default function IdeasPanel({ open, onClose }: { open: boolean; onClose: 
                 ))}
               </div>
               <div className="mt-4 rounded-xl bg-white/[0.03] ring-1 ring-white/5 p-3.5 text-[11px] text-slate-400 leading-relaxed">
-                <p className="mb-1.5 text-slate-300 font-medium">Candidatas descartadas o diferidas</p>
-                THEMIS all-sky (video, pesado), SuperMAG (requiere registro), GNSS S4 de IGS (formato RINEX
-                demasiado pesado para polling), Dst en JSON (endpoint retirado — se puede derivar de
-                SuperMAG/síntesis local). DIAS (ya integrada en el C++) queda como relleno europeo sin
-                duplicación.
+                <p className="mb-1.5 text-slate-300 font-medium">Candidates discarded or deferred</p>
+                THEMIS all-sky (video, heavy), SuperMAG (requires registration), IGS GNSS S4 (RINEX format
+                too heavy for polling), Dst in JSON (endpoint retired — it can be derived from
+                SuperMAG/local synthesis). DIAS (already integrated in the C++) stays as European filler without
+                duplication.
               </div>
             </>
           )}
@@ -191,13 +197,13 @@ function IdeaCard({ idea }: { idea: (typeof IDEAS)[number] }) {
                   : "bg-slate-500/15 text-slate-400 ring-slate-400/20"
           }`}
         >
-          {idea.status}
+          {STATUS_LABEL[idea.status]}
         </span>
         <span className="text-xs text-slate-100 font-medium flex-1 leading-snug">{idea.title}</span>
         <span className={`text-[9px] uppercase px-1.5 py-0.5 rounded ring-1 shrink-0 ${CAT_COLOR[idea.category]}`}>
           {CAT_LABEL[idea.category]}
         </span>
-        <span className="flex gap-0.5 shrink-0" title={`Impacto ${idea.impact}/5 · Esfuerzo ${idea.effort}/5`}>
+        <span className="flex gap-0.5 shrink-0" title={`Impact ${idea.impact}/5 · Effort ${idea.effort}/5`}>
           {Array.from({ length: 5 }, (_, i) => (
             <span
               key={i}
@@ -222,20 +228,20 @@ function IdeaCard({ idea }: { idea: (typeof IDEAS)[number] }) {
           <p className="text-[11px] text-slate-400 leading-relaxed mb-2">{idea.detail}</p>
           {idea.missing && (
             <div className="rounded-lg bg-cyan-500/8 ring-1 ring-cyan-400/15 px-2.5 py-1.5 mb-2">
-              <span className="text-[9px] uppercase tracking-wider text-cyan-300/80">Falta</span>
+              <span className="text-[9px] uppercase tracking-wider text-cyan-300/80">Missing</span>
               <p className="text-[11px] text-slate-300 leading-relaxed mt-0.5">{idea.missing}</p>
             </div>
           )}
           {idea.port && (
             <div className="rounded-lg bg-cyan-500/8 ring-1 ring-cyan-400/15 px-2.5 py-1.5">
-              <span className="text-[9px] uppercase tracking-wider text-cyan-300/80">Port al C++</span>
+              <span className="text-[9px] uppercase tracking-wider text-cyan-300/80">Port to C++</span>
               <p className="text-[11px] text-slate-300 leading-relaxed mt-0.5">{idea.port}</p>
             </div>
           )}
           <div className="flex gap-3 mt-2 text-[9px] text-slate-600 uppercase tracking-wider">
-            <span>impacto {idea.impact}/5</span>
-            <span>esfuerzo {idea.effort}/5</span>
-            <span>barra cian = impacto · barra naranja = esfuerzo</span>
+            <span>impact {idea.impact}/5</span>
+            <span>effort {idea.effort}/5</span>
+            <span>cyan bar = impact · orange bar = effort</span>
           </div>
         </div>
       )}

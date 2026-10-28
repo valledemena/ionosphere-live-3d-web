@@ -126,7 +126,7 @@ export default function Home() {
   // activar); cualquier click en el canvas aborta sin salto de camara.
   const [tourOn, setTourOn] = useState(false);
   const [tourIdx, setTourIdx] = useState(0);
-  const [tourEs, setTourEs] = useState(true);
+  const [tourEs, setTourEs] = useState(false);
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       if (e.repeat || e.metaKey || e.ctrlKey || e.altKey) return;
@@ -374,18 +374,18 @@ export default function Home() {
               disabled={!videoExport.supported || !sceneCanvas || videoExport.busy}
               title={
                 !sceneCanvas
-                  ? "Preparando escena 3D…"
+                  ? "Preparing 3D scene…"
                   : videoExport.recording
-                    ? "Detener grabación"
+                    ? "Stop recording"
                     : !videoExport.supported
-                      ? "Grabación no soportada en este navegador"
-                      : "Graba 15 s del canvas 3D (sin HUD ni audio; hasta 30 fps)"
+                      ? "Recording not supported in this browser"
+                      : "Records 15 s of the 3D canvas (no HUD or audio; up to 30 fps)"
               }
               className="hidden sm:flex items-center gap-1.5 text-xs px-3 py-2 rounded-xl bg-rose-500/15 text-rose-200 ring-1 ring-rose-400/30 hover:bg-rose-500/25 transition-colors backdrop-blur-md disabled:opacity-40 disabled:cursor-not-allowed"
             >
               <Video size={13} />
               {videoExport.busy ? (
-                <span>Procesando…</span>
+                <span>Processing…</span>
               ) : videoExport.recording ? (
                 <>
                   <span className="w-1.5 h-1.5 rounded-full bg-rose-500 animate-pulse" />
@@ -400,7 +400,7 @@ export default function Home() {
               className="flex items-center gap-1.5 text-xs px-3 py-2 rounded-xl bg-cyan-500/15 text-cyan-200 ring-1 ring-cyan-400/30 hover:bg-cyan-500/25 transition-colors backdrop-blur-md"
             >
               <FlaskConical size={13} />
-              <span className="hidden sm:inline">Explorar ideas</span>
+              <span className="hidden sm:inline">Explore ideas</span>
               <span className="sm:hidden">Ideas</span>
               <span className="text-[9px] bg-cyan-400/20 rounded-full px-1.5 py-0.5">{IDEAS.length}</span>
             </button>
@@ -409,7 +409,7 @@ export default function Home() {
               target="_blank"
               rel="noreferrer"
               className="text-slate-500 hover:text-slate-200 transition-colors p-2 rounded-xl hover:bg-white/5"
-              title="Repositorio del proyecto (web)"
+              title="Project repository (web)"
             >
               <Github size={16} />
             </a>
@@ -418,7 +418,7 @@ export default function Home() {
       </header>
 
       {/* paneles laterales */}
-      <div className="absolute left-4 top-20 bottom-28 z-10 w-60 overflow-y-auto overscroll-contain pointer-events-auto space-y-3 hidden md:block pr-1 [scrollbar-width:thin] [scrollbar-color:rgba(148,163,184,0.35)_transparent] [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-slate-400/30 [&::-webkit-scrollbar-track]:bg-transparent" role="region" tabIndex={0} aria-label="Paneles de clima espacial (desplazable)">
+      <div className="absolute left-4 top-20 bottom-28 z-10 w-60 overflow-y-auto overscroll-contain pointer-events-auto space-y-3 hidden md:block pr-1 [scrollbar-width:thin] [scrollbar-color:rgba(148,163,184,0.35)_transparent] [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-slate-400/30 [&::-webkit-scrollbar-track]:bg-transparent" role="region" tabIndex={0} aria-label="Space weather panels (scrollable)">
         <SpaceWeatherPanel
           sw={sw}
           alerts={alertSnap}
@@ -440,7 +440,7 @@ export default function Home() {
         <VoyagerPanel voyager={voyager} />
         <MsisPanel msis={msis} />
       </div>
-      <div className="absolute right-4 top-20 bottom-36 z-10 w-64 overflow-y-auto overscroll-contain pointer-events-auto space-y-3 hidden md:block pl-1 [scrollbar-width:thin] [scrollbar-color:rgba(148,163,184,0.35)_transparent] [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-slate-400/30 [&::-webkit-scrollbar-track]:bg-transparent" role="region" tabIndex={0} aria-label="Capas y radio (desplazable)">
+      <div className="absolute right-4 top-20 bottom-36 z-10 w-64 overflow-y-auto overscroll-contain pointer-events-auto space-y-3 hidden md:block pl-1 [scrollbar-width:thin] [scrollbar-color:rgba(148,163,184,0.35)_transparent] [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-slate-400/30 [&::-webkit-scrollbar-track]:bg-transparent" role="region" tabIndex={0} aria-label="Layers and radio (scrollable)">
         <LayersPanel settings={settings} onChange={onSettingsChange} ionosondes={ionos} fps={fps} sw={sw ? sw.wind : null} />
         <RadioPanel link={link} tx={tx} rx={rx} freq={linkFreq} onFreq={setLinkFreq} sw={sw ? { kp: sw.kp.now, xray: sw.xray.now } : null} utcSec={effSec} settings={settings} onSettings={onSettingsChange} slicePeak={slicePeak} />
       </div>
@@ -505,7 +505,7 @@ export default function Home() {
           onClick={() => setTourOn(true)}
           className="absolute bottom-4 left-4 z-10 pointer-events-auto flex items-center gap-1.5 text-xs px-3 py-2 rounded-xl bg-violet-500/15 text-violet-200 ring-1 ring-violet-400/30 hover:bg-violet-500/25 transition-colors backdrop-blur-md"
         >
-          Tour guiado <span className="text-[9px] bg-violet-400/20 rounded-full px-1.5 py-0.5">T</span>
+          Guided tour <span className="text-[9px] bg-violet-400/20 rounded-full px-1.5 py-0.5">T</span>
         </button>
       )}
 
@@ -515,7 +515,7 @@ export default function Home() {
           <div className="rounded-xl border border-white/10 bg-[#0a0f1e]/85 backdrop-blur-md shadow-2xl shadow-black/40 px-3.5 py-2.5">
             <div className="flex items-center justify-between gap-2">
               <span className="text-[11px] font-semibold uppercase tracking-[0.18em] text-violet-200/90">
-                Visita guiada {tourIdx + 1}/{tourCount()}
+                Guided tour {tourIdx + 1}/{tourCount()}
               </span>
               <span className="flex items-center gap-1">
                 <button
@@ -527,7 +527,7 @@ export default function Home() {
                 <button
                   onClick={() => setTourOn(false)}
                   className="text-slate-400 hover:text-slate-100 p-1 rounded-lg hover:bg-white/5"
-                  title="Cerrar tour"
+                  title="Close tour"
                 >
                   <X size={13} />
                 </button>
@@ -556,14 +556,14 @@ export default function Home() {
                 <RadioTower size={11} /> {txCode}
               </span>
             ) : (
-              <span className="text-slate-500">haz clic para TX</span>
+              <span className="text-slate-500">click for TX</span>
             )}
             {rxCode ? (
               <span className="flex items-center gap-1 text-amber-300 font-mono">
                 <Signal size={11} /> {rxCode}
               </span>
             ) : txCode ? (
-              <span className="text-slate-500">· segundo clic = RX</span>
+              <span className="text-slate-500">· second click = RX</span>
             ) : null}
             {txCode && rxCode && (
               <button
@@ -589,12 +589,12 @@ export default function Home() {
             <div className="absolute inset-3 rounded-full bg-cyan-400/10 animate-pulse" />
           </div>
           <p className="text-xs text-slate-400 tracking-wide">
-            Conectando con NOAA SWPC · GIRO · SDO…
+            Connecting to NOAA SWPC · GIRO · SDO…
           </p>
           <div className="flex gap-2 text-[10px]">
-            <StatusChip ok={!!sw} label="clima espacial" />
+            <StatusChip ok={!!sw} label="space weather" />
             <StatusChip ok={!!aurora} label="aurora" />
-            <StatusChip ok={!!ionos} label="ionosondas" />
+            <StatusChip ok={!!ionos} label="ionosondes" />
           </div>
         </div>
       )}
@@ -606,7 +606,7 @@ export default function Home() {
         <footer className="absolute bottom-16 left-4 z-10 text-[9px] text-slate-600 pointer-events-none hidden lg:block leading-relaxed">
           NOAA SWPC · GIRO DIDBase (CC BY-NC-SA 4.0) · SDO (NASA/SDO &amp; AIA, HMI consortium)
           <br />
-          Fallback kc2g (GIRO/WWROF/eSWua) · Exploración derivada del repositorio C++ ionosphere-live-3d
+          Fallback kc2g (GIRO/WWROF/eSWua) · Exploration derived from the ionosphere-live-3d C++ repository
         </footer>
       )}
     </main>
@@ -699,9 +699,9 @@ function MobilePanels({
       <div className="flex gap-1.5 mb-2 pointer-events-auto">
         {(
           [
-            ["wx", "Clima"],
+            ["wx", "Weather"],
             ["radio", "Radio"],
-            ["layers", "Capas"],
+            ["layers", "Layers"],
           ] as const
         ).map(([id, label]) => (
           <button

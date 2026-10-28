@@ -37,7 +37,7 @@ export default function TimeBar({ settings, onChange, maxReplayMin }: Props) {
         className={`flex items-center gap-1.5 text-[11px] font-semibold rounded-lg px-2.5 py-1.5 transition-colors ${
           replay ? "bg-amber-500/20 text-amber-300 ring-1 ring-amber-400/40" : "bg-emerald-500/20 text-emerald-300 ring-1 ring-emerald-400/40"
         }`}
-        title="Alternar LIVE / REPLAY"
+        title="Toggle LIVE / REPLAY"
       >
         {replay ? <Pause size={12} /> : <Play size={12} />}
         {replay ? "REPLAY" : "LIVE"}
@@ -73,7 +73,7 @@ export default function TimeBar({ settings, onChange, maxReplayMin }: Props) {
         />
         <div className="flex justify-between text-[9px] text-slate-600 mt-0.5 select-none">
           <span>−{maxReplayMin / 60} h</span>
-          <span>{scrubbing ? "hist. GIRO · 5 min/frame" : "ahora"}</span>
+          <span>{scrubbing ? "GIRO hist. · 5 min/frame" : "now"}</span>
         </div>
       </div>
 
@@ -81,7 +81,7 @@ export default function TimeBar({ settings, onChange, maxReplayMin }: Props) {
         <button
           onClick={() => onChange({ timeMode: "live", replayMinutes: 0 })}
           className="text-slate-400 hover:text-cyan-300 transition-colors"
-          title="Volver a tiempo real"
+          title="Back to live time"
         >
           <RotateCcw size={13} />
         </button>
@@ -95,7 +95,7 @@ export default function TimeBar({ settings, onChange, maxReplayMin }: Props) {
             className={`transition-colors ${
               settings.replayPlaying ? "text-amber-300 hover:text-amber-200" : "text-slate-400 hover:text-cyan-300"
             }`}
-            title={settings.replayPlaying ? "Pausar" : "Reproducir"}
+            title={settings.replayPlaying ? "Pause" : "Play"}
           >
             {settings.replayPlaying ? <Pause size={13} /> : <Play size={13} />}
           </button>
@@ -105,7 +105,7 @@ export default function TimeBar({ settings, onChange, maxReplayMin }: Props) {
               onChange({ replaySpeed: SPEEDS[(i + 1) % SPEEDS.length] });
             }}
             className="font-mono text-[10px] text-slate-400 hover:text-cyan-300 transition-colors"
-            title="Velocidad (x20 min/s a 1x)"
+            title="Speed (x20 min/s at 1x)"
           >
             {settings.replaySpeed}x
           </button>
@@ -114,7 +114,7 @@ export default function TimeBar({ settings, onChange, maxReplayMin }: Props) {
             className={`transition-colors ${
               settings.replayLoop ? "text-cyan-300 hover:text-cyan-200" : "text-slate-600 hover:text-slate-400"
             }`}
-            title="Bucle 168 h"
+            title="Loop 168 h"
           >
             <Repeat size={13} />
           </button>

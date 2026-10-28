@@ -25,16 +25,16 @@ export default function SpaceWeatherPanel({
   const [solarImg, setSolarImg] = useState(true);
   if (!sw) {
     return (
-      <PanelBox title="Clima espacial">
+      <PanelBox title="Space weather">
         <div className="text-xs text-slate-500 py-6 text-center animate-pulse">
-          Conectando con NOAA SWPC…
+          Connecting to NOAA SWPC…
         </div>
       </PanelBox>
     );
   }
 
   const kp = sw.kp.now;
-  const gLabel = ["G0 Quieta", "G1 Menor", "G2 Moderada", "G3 Fuerte", "G4 Severa", "G5 Extrema"][
+  const gLabel = ["G0 Quiet", "G1 Minor", "G2 Moderate", "G3 Strong", "G4 Severe", "G5 Extreme"][
     sw.kp.gScale
   ];
   const kpColor =
@@ -44,11 +44,11 @@ export default function SpaceWeatherPanel({
   const xr = sw.xray;
 
   return (
-    <PanelBox title="Clima espacial" badge={<SourceDot source={sw.kp.source} />}>
+    <PanelBox title="Space weather" badge={<SourceDot source={sw.kp.source} />}>
       {/* Kp */}
       <div className="flex items-center justify-between mb-1">
         <span className="flex items-center gap-1.5 text-[11px] uppercase tracking-wider text-slate-400">
-          <Activity size={12} /> Índice Kp
+          <Activity size={12} /> Kp index
         </span>
         <span className={`text-lg font-semibold ${kpColor}`}>{kp.toFixed(2)}</span>
       </div>
@@ -83,7 +83,7 @@ export default function SpaceWeatherPanel({
       {/* viento solar */}
       <StatRow
         icon={<Wind size={12} />}
-        label="Viento solar"
+        label="Solar wind"
         value={`${sw.wind.speed} km/s`}
         extra={
           <>
@@ -118,20 +118,20 @@ export default function SpaceWeatherPanel({
           color="#f472b6"
         />
       </div>
-      <div className="text-[10px] text-slate-500 text-right -mt-0.5 mb-1">escala log · 6 h</div>
+      <div className="text-[10px] text-slate-500 text-right -mt-0.5 mb-1">log scale · 6 h</div>
 
       {/* disco solar con manchas reales posicionadas */}
       <button
         onClick={() => setSolarImg(!solarImg)}
         className="mt-1 w-full flex items-center gap-3 group"
-        title="SDO/HMI — clic para alternar AIA 304 (cromosfera)"
+        title="SDO/HMI — click to toggle AIA 304 (chromosphere)"
       >
         <div className="relative w-16 h-16 shrink-0 rounded-full overflow-hidden ring-1 ring-amber-200/30 group-hover:ring-amber-200/60 transition">
           
           {/* eslint-disable-next-line @next/next/no-img-element -- imagen remota viva; sin optimizador a propósito */}
           <img
             src={`/api/solar-image?type=${solarImg ? "hmi" : "aia304"}`}
-            alt="Disco solar en tiempo real (SDO)"
+            alt="Solar disk in real time (SDO)"
             className="w-full h-full object-cover"
           />
           {/* marcadores de regiones activas */}
@@ -151,9 +151,9 @@ export default function SpaceWeatherPanel({
           })}
         </div>
         <div className="text-[10px] leading-snug text-slate-500 text-left">
-          <div className="text-slate-300 font-medium">{solarImg ? "SDO · HMI (fotosfera)" : "SDO · AIA 304 (cromosfera)"}</div>
-          <div>Regiones activas: {sw.sunspots.regions.length}</div>
-          <div>· clic para alternar ·</div>
+          <div className="text-slate-300 font-medium">{solarImg ? "SDO · HMI (photosphere)" : "SDO · AIA 304 (chromosphere)"}</div>
+          <div>Active regions: {sw.sunspots.regions.length}</div>
+          <div>· click to toggle ·</div>
         </div>
       </button>
 
@@ -161,10 +161,10 @@ export default function SpaceWeatherPanel({
       {sw.forecast.maxKp !== null && (
         <div className="mt-2 pt-2 border-t border-white/10">
           <div className="flex items-center gap-1.5 text-[11px] text-slate-400">
-            <Globe2 size={12} /> Próximas 72 h
+            <Globe2 size={12} /> Next 72 h
           </div>
           <p className="text-[11px] text-slate-300 leading-snug mt-0.5">
-            Kp máx previsto <span className="text-cyan-300 font-medium">{sw.forecast.maxKp}</span>
+            Expected max Kp <span className="text-cyan-300 font-medium">{sw.forecast.maxKp}</span>
             {sw.forecast.note ? ` — ${sw.forecast.note.slice(0, 150)}` : ""}
           </p>
         </div>
@@ -187,7 +187,7 @@ function ruleHint(r: number, p: AlertPrefs): string {
   if (r === 0) return `RED >= Kp ${t.kpRed}`;
   if (r === 1) return `RED <= Bz ${t.bzRed} nT`;
   if (r === 2) return `RED >= ${t.xrayRedRank === 4 ? "X" : t.xrayRedRank === 3 ? "M" : "C"}`;
-  return `RED >= ${Math.round(t.mufRedDrop * 100)}% caida`;
+  return `RED >= ${Math.round(t.mufRedDrop * 100)}% drop`;
 }
 
 function AlertsSection({
@@ -208,7 +208,7 @@ function AlertsSection({
   return (
     <div className="mt-2 pt-2 border-t border-white/10">
       <div className="flex items-center justify-between">
-        <span className="text-[11px] uppercase tracking-wider text-slate-400">Alertas</span>
+        <span className="text-[11px] uppercase tracking-wider text-slate-400">Alerts</span>
         <span className="flex items-center gap-1.5">
           <span className={`text-[11px] font-semibold ${LVL_CLS[alerts.overall]}`}>
             {LVL_TXT[alerts.overall]}
@@ -217,9 +217,9 @@ function AlertsSection({
             <button
               type="button"
               onClick={() => setOpen((v) => !v)}
-              aria-label="Ajustes de alertas"
+              aria-label="Alert settings"
               aria-expanded={open}
-              title="Ajustes de alertas"
+              title="Alert settings"
               className="p-0.5 rounded text-slate-500 hover:text-cyan-200 transition-colors"
             >
               <Settings size={12} />
@@ -237,26 +237,26 @@ function AlertsSection({
       ))}
       {open && set && (
         <div className="mt-1.5 rounded-lg bg-white/[0.04] ring-1 ring-white/10 px-2 py-1.5 space-y-1">
-          <Row label={`Kp rojo ≥ ${t.kpRed}`}>
+          <Row label={`Red Kp ≥ ${t.kpRed}`}>
             <input
               type="range" min={4} max={9} step={0.5} value={t.kpRed}
-              aria-label="Umbral Kp rojo"
+              aria-label="Red Kp threshold"
               onChange={(e) => set({ thresholds: { ...t, kpRed: Number(e.target.value) } })}
               className="w-20 accent-red-400"
             />
           </Row>
-          <Row label={`Bz rojo ≤ ${t.bzRed} nT`}>
+          <Row label={`Red Bz ≤ ${t.bzRed} nT`}>
             <input
               type="range" min={-30} max={-5} step={1} value={t.bzRed}
-              aria-label="Umbral Bz rojo"
+              aria-label="Red Bz threshold"
               onChange={(e) => set({ thresholds: { ...t, bzRed: Number(e.target.value) } })}
               className="w-20 accent-red-400"
             />
           </Row>
-          <Row label="X-ray rojo">
+          <Row label="Red X-ray">
             <select
               value={t.xrayRedRank}
-              aria-label="Umbral X-ray rojo"
+              aria-label="Red X-ray threshold"
               onChange={(e) => set({ thresholds: { ...t, xrayRedRank: Number(e.target.value) } })}
               className="bg-[#0a0f1e] text-[11px] text-slate-200 ring-1 ring-white/10 rounded px-1"
             >
@@ -265,10 +265,10 @@ function AlertsSection({
               <option value={4}>X</option>
             </select>
           </Row>
-          <Row label={`MUF rojo ≥ ${Math.round(t.mufRedDrop * 100)}%`}>
+          <Row label={`Red MUF ≥ ${Math.round(t.mufRedDrop * 100)}%`}>
             <input
               type="range" min={10} max={50} step={5} value={Math.round(t.mufRedDrop * 100)}
-              aria-label="Umbral caida MUF roja"
+              aria-label="Red MUF drop threshold"
               onChange={(e) => set({ thresholds: { ...t, mufRedDrop: Number(e.target.value) / 100 } })}
               className="w-20 accent-red-400"
             />
@@ -278,7 +278,7 @@ function AlertsSection({
               <input
                 type="checkbox" checked={prefs.toast}
                 onChange={(e) => set({ toast: e.target.checked })}
-                aria-label="Avisos toast"
+                aria-label="Toast notifications"
                 className="accent-cyan-400"
               />
               Toast
@@ -287,17 +287,17 @@ function AlertsSection({
               <input
                 type="checkbox" checked={prefs.sound}
                 onChange={(e) => set({ sound: e.target.checked })}
-                aria-label="Sonido de alertas"
+                aria-label="Alert sound"
                 className="accent-cyan-400"
               />
-              Sonido
+              Sound
             </label>
             <button
               type="button"
               onClick={() => onTestSound?.()}
               className="text-[10px] px-1.5 py-0.5 rounded bg-cyan-500/15 text-cyan-200 ring-1 ring-cyan-400/30 hover:bg-cyan-500/25"
             >
-              Probar
+              Test
             </button>
             <button
               type="button"
@@ -306,7 +306,7 @@ function AlertsSection({
               }
               className="text-[10px] px-1.5 py-0.5 rounded bg-white/5 text-slate-400 ring-1 ring-white/10 hover:bg-white/10"
             >
-              Restablecer
+              Reset
             </button>
           </div>
         </div>

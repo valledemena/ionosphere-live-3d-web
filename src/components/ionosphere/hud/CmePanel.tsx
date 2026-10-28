@@ -25,9 +25,9 @@ export default function CmePanel({ cme, epochMs }: { cme: CmeData | null; epochM
 
   if (!cme) {
     return (
-      <PanelBox title="Tablero solar">
+      <PanelBox title="Solar dashboard">
         <div className="text-xs text-slate-500 py-6 text-center animate-pulse">
-          Consultando al CCMC…
+          Querying CCMC…
         </div>
       </PanelBox>
     );
@@ -47,18 +47,18 @@ export default function CmePanel({ cme, epochMs }: { cme: CmeData | null; epochM
   };
 
   return (
-    <PanelBox title="Tablero solar" badge={<SourceDot source={cme.source} />}>
+    <PanelBox title="Solar dashboard" badge={<SourceDot source={cme.source} />}>
       {cme.status === "unknown" && (
         <div className="text-[11px] text-slate-500 py-3 text-center">
-          Sin datos ENLIL (CCMC no responde) — jamás se muestra un CME ficticio.
+          No ENLIL data (CCMC not responding) — a fictitious CME is never shown.
         </div>
       )}
       {cme.status === "quiet" && (
         <div className="text-[11px] text-slate-300 leading-snug">
-          <span className="text-emerald-400 font-medium">Sin evento geoefectivo.</span>
+          <span className="text-emerald-400 font-medium">No geoeffective event.</span>
           <div className="text-slate-500 mt-0.5">
-            Última sim {cme.modelTime ? new Date(cme.modelTime).toISOString().slice(0, 16).replace("T", " ") + "Z" : "—"}
-            {" · "}{cme.simCount} sims en ventana
+            Last sim {cme.modelTime ? new Date(cme.modelTime).toISOString().slice(0, 16).replace("T", " ") + "Z" : "—"}
+            {" · "}{cme.simCount} sims in window
           </div>
         </div>
       )}
@@ -67,7 +67,7 @@ export default function CmePanel({ cme, epochMs }: { cme: CmeData | null; epochM
       )}
       {/* O1.2: declaracion ENLIL exacta del ruling 252, siempre visible */}
       <p className="text-[10px] text-slate-500 leading-snug mt-2 pt-2 border-t border-white/10">
-        El frente visualiza el pronóstico ENLIL del CCMC; no es una simulación propia.
+        The front visualizes the CCMC ENLIL forecast; it is not our own simulation.
       </p>
     </PanelBox>
   );
@@ -94,48 +94,48 @@ function EventBody({
     <div>
       {/* esquema Sol -> frente -> Tierra */}
       <div className="flex items-center gap-1.5 text-[10px] text-slate-400">
-        <span className="flex items-center gap-1 shrink-0"><Sun size={11} className="text-amber-300" /> SOL</span>
+        <span className="flex items-center gap-1 shrink-0"><Sun size={11} className="text-amber-300" /> SUN</span>
         <div className="relative flex-1 h-1.5 rounded-full bg-white/10 overflow-visible">
           <div className="absolute inset-y-0 left-0 rounded-full bg-orange-400/70" style={{ width: `${disp * 100}%` }} />
           <div
             className="absolute top-1/2 w-2.5 h-2.5 rounded-full bg-orange-300 ring-2 ring-orange-100/60"
             style={{ left: `calc(${(disp * 100).toFixed(1)}% - 5px)`, transform: "translateY(-50%)" }}
-            title={`Frente al ${(disp * 100).toFixed(0)}% del tránsito`}
+            title={`Front at ${(disp * 100).toFixed(0)}% of transit`}
           />
         </div>
-        <span className="shrink-0 text-cyan-300">⊕ TIERRA</span>
+        <span className="shrink-0 text-cyan-300">⊕ EARTH</span>
       </div>
 
       <div className="flex items-center justify-between mt-1.5">
         <span className={`text-xs font-semibold ${arrived && ev.earthGB ? "text-red-400" : "text-slate-200"}`}>
-          {arrived ? (ev.earthGB ? "LLEGADA ENLIL" : "Pasó de largo") : `ETA ${cmeCountdown(ev.arrival, epochMs)}`}
+          {arrived ? (ev.earthGB ? "ENLIL ARRIVAL" : "Passed by") : `ETA ${cmeCountdown(ev.arrival, epochMs)}`}
         </span>
         <button
           onClick={() => onSweep(live)}
           className="text-[10px] px-2 py-0.5 rounded-full bg-white/10 text-slate-200 hover:bg-white/20"
-          title={`Comprime el tránsito real a 8 s (factor ×${n})`}
+          title={`Compresses the real transit to 8 s (factor ×${n})`}
         >
-          ▶ tránsito ×{n}
+          ▶ transit ×{n}
         </button>
       </div>
       {sweep !== null && (
-        <div className="text-[10px] text-slate-500">tiempo ×{n} (barrido de 8 s, O1.5)</div>
+        <div className="text-[10px] text-slate-500">time ×{n} (8 s sweep, O1.5)</div>
       )}
 
       {/* parámetros ENLIL (O1.4: de la propia sim, entrada más exacta) */}
       <div className="grid grid-cols-3 gap-x-2 gap-y-0.5 mt-1.5 text-[10px]">
         <span className="text-slate-500">v</span>
         <span className="col-span-2 text-slate-200 font-mono">{ev.speed != null ? `${ev.speed} km/s` : "—"}</span>
-        <span className="text-slate-500">ancho ½</span>
+        <span className="text-slate-500">half-width ½</span>
         <span className="col-span-2 text-slate-200 font-mono">{ev.halfAngle != null ? `${ev.halfAngle}°` : "—"}</span>
-        <span className="text-slate-500">origen</span>
+        <span className="text-slate-500">origin</span>
         <span className="col-span-2 text-slate-200 font-mono">
           {ev.srcLat != null ? `${ev.srcLat}°, ${ev.srcLon}°` : "—"}
         </span>
         {ev.kpMax != null && (
           <>
             <span className="text-slate-500">Kp ENLIL</span>
-            <span className="col-span-2 text-slate-200 font-mono">hasta {ev.kpMax}</span>
+            <span className="col-span-2 text-slate-200 font-mono">up to {ev.kpMax}</span>
           </>
         )}
       </div>
@@ -145,40 +145,40 @@ function EventBody({
         <div className="mt-1.5 flex items-start gap-1.5 text-[10px] text-red-300/90 leading-snug">
           <TriangleAlert size={11} className="shrink-0 mt-0.5" />
           <span>
-            Compresión #4 ×1.6 (demo declarada) · óvalo ON · el motor de alertas
-            (Kp/Bz vivos) dispara solo con la tormenta real.
+            Compression #4 ×1.6 (declared demo) · oval ON · the alert engine
+            (live Kp/Bz) only fires with the real storm.
           </span>
         </div>
       )}
       <div className="text-[10px] text-slate-600 mt-1">
-        Cadena futura F2 (declarada): fadeout #2 · Forbush #14 · Dst #18.
+        Future chain F2 (declared): fadeout #2 · Forbush #14 · Dst #18.
       </div>
 
       {/* O1.4: textura LASCO del momento, con fallback honesto */}
       {lascoOk ? ( // eslint-disable-next-line @next/next/no-img-element -- imagen remota viva; sin optimizador a propósito
         <img
           src={LASCO_C2}
-          alt="LASCO C2 en tiempo real (SOHO)"
+          alt="LASCO C2 in real time (SOHO)"
           className="mt-1.5 w-full rounded-lg ring-1 ring-white/10"
           loading="lazy"
           onError={onLascoError}
         />
       ) : (
-        <div className="mt-1.5 text-[10px] text-slate-500">Sin imagen LASCO del momento.</div>
+        <div className="mt-1.5 text-[10px] text-slate-500">No LASCO image for this moment.</div>
       )}
       <div className="flex items-center justify-between mt-1">
         <span className={`text-[10px] font-mono ${geoCol}`}>
-          {ev.earthGB ? "geoefectiva" : "no geoefectiva"} · {ev.simId}
+          {ev.earthGB ? "geoeffective" : "not geoeffective"} · {ev.simId}
         </span>
         {ev.link && (
           <a href={ev.link} target="_blank" rel="noreferrer" className="text-[10px] text-cyan-400/80 hover:text-cyan-300">
-            ver en CCMC
+            view on CCMC
           </a>
         )}
       </div>
       <div className="text-[10px] text-slate-500 flex items-center gap-1 mt-0.5">
-        <Rocket size={10} /> inicio {ev.start ? new Date(ev.start).toISOString().slice(5, 16).replace("T", " ") + "Z" : "—"}
-        {" → "}llegada {new Date(ev.arrival).toISOString().slice(5, 16).replace("T", " ") + "Z"}
+        <Rocket size={10} /> start {ev.start ? new Date(ev.start).toISOString().slice(5, 16).replace("T", " ") + "Z" : "—"}
+        {" → "}arrival {new Date(ev.arrival).toISOString().slice(5, 16).replace("T", " ") + "Z"}
       </div>
     </div>
   );

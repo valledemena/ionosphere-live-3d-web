@@ -30,7 +30,7 @@ export default function SatellitePanel({
   const st = satPanelState(sat, down);
   return (
     <PanelBox
-      title="Eco orbital 2026"
+      title="Orbital echo 2026"
       badge={
         sat && sat.source !== "unavailable" ? (
           <span className="inline-flex items-center gap-1 text-[9px] uppercase tracking-wider text-slate-400">

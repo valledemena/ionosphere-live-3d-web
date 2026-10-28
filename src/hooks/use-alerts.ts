@@ -93,7 +93,7 @@ export function playAlertChime(level: "AMBER" | "RED"): void {
 function notify(level: "AMBER" | "RED", rule: number, from: AlertLevel, to: AlertLevel, prefs: AlertPrefs): void {
   if (prefs.toast) {
     showToast({
-      title: `Alerta ${level} · ${RULE_NAMES[rule]}`,
+      title: `Alert ${level} · ${RULE_NAMES[rule]}`,
       description: `${LVL_TXT[from]} → ${LVL_TXT[to]}`,
       duration: 6000,
     });

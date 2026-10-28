@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 // ionosphere-live-3d — TU del contrato del panel del eco 2026 (drop 321,
-// F2b #10, ruling 320): label byte a byte, "unavailable" -> "sin datos" y
-// fallo de cliente -> estado separado "sin conexión con la ruta".
+// F2b #10, ruling 320): label byte a byte, "unavailable" -> "no data" y
+// fallo de cliente -> estado separado "no connection to the route".
 
 import { describe, expect, it } from "vitest";
 import { buildPayload, sourceLabel, type CatalogPayload } from "./catalog";
@@ -18,16 +18,16 @@ describe("satPanelState", () => {
 
   it("fallo de cliente: estado separado con el texto del ruling", () => {
     const st = satPanelState(null, true);
-    expect(st).toEqual({ kind: "error", text: "sin conexión con la ruta" });
-    expect(SAT_ERR_TEXT).toBe("sin conexión con la ruta");
+    expect(st).toEqual({ kind: "error", text: "no connection to the route" });
+    expect(SAT_ERR_TEXT).toBe("no connection to the route");
   });
 
-  it('source "unavailable": texto "sin datos" (jamas se pinta label)', () => {
+  it('source "unavailable": texto "no data" (jamas se pinta label)', () => {
     const st = satPanelState(payload("unavailable"), false);
     expect(st.kind).toBe("unavailable");
     if (st.kind === "unavailable") {
       expect(st.text).toBe(SAT_NA_TEXT);
-      expect(st.text).toBe("sin datos");
+      expect(st.text).toBe("no data");
     }
   });
 

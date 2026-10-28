@@ -31,7 +31,7 @@ export const RING_DIPOLE_LENGTH_M = 0.0178;
 export const RING_PARTICLES = 4096;
 
 /** Texto EXACTO de la etiqueta (ruling 320; dos sitios: panel + leyenda). */
-export const RING_LABEL = "West Ford 1963 — reconstrucción declarada (sin datos vivos)";
+export const RING_LABEL = "West Ford 1963 - declared reconstruction (no live data)";
 
 /** LCG determinista (mulberry32); semilla fija = nube reproducible. */
 function mulberry32(seed: number): () => number {

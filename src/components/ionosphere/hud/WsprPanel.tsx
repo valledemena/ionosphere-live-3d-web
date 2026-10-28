@@ -21,7 +21,7 @@ export default function WsprPanel({
     return (
       <PanelBox title="WSPRnet">
         <div className="text-xs text-slate-500 py-6 text-center animate-pulse">
-          Consultando spots…
+          Querying spots…
         </div>
       </PanelBox>
     );
@@ -37,16 +37,16 @@ export default function WsprPanel({
     <PanelBox title="WSPRnet" badge={<SourceDot source={wspr.source} />}>
       {wspr.spots.length === 0 ? (
         <div className="text-[11px] text-slate-500 py-3 text-center">
-          Sin datos (feed caído o sin red) — jamás spots falsos.
+          No data (feed down or no network) — never fake spots.
         </div>
       ) : (
         <>
           <div className="flex items-center justify-between">
             <span className="flex items-center gap-1.5 text-[11px] uppercase tracking-wider text-slate-400">
-              <Radio size={12} /> Apertura por banda
+              <Radio size={12} /> Opening by band
             </span>
             <span className="text-[11px] text-slate-300 font-mono">
-              {wspr.spots.length} spots · {day} de día
+              {wspr.spots.length} spots · {day} dayside
             </span>
           </div>
           {opening.map((b) => {
@@ -67,8 +67,8 @@ export default function WsprPanel({
         </>
       )}
       <p className="text-[10px] text-slate-500 leading-snug mt-2 pt-2 border-t border-white/10">
-        Spots reales de voluntarios (WSPRnet olddb) · persistencia ~10 min
-        declarada · la autopista HF en uso.
+        Real volunteer spots (WSPRnet olddb) · ~10 min persistence
+        declared · the HF highway in use.
       </p>
     </PanelBox>
   );

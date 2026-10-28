@@ -38,7 +38,7 @@ export default function Legend({
         <span>{max.toFixed(1)}</span>
       </div>
       <div className="text-[9px] text-slate-600 mt-1 leading-tight">
-        GIRO + fondo climatológico · shell a hmF2 real
+        GIRO + climatological background · shell at real hmF2
       </div>
       {extras?.map((x) => (
         <div key={x} className="text-[9px] text-amber-200/80 mt-0.5 leading-tight">

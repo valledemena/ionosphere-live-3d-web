@@ -9,9 +9,9 @@
 import type { CatalogPayload } from "./catalog";
 
 /** Fallo de cliente: la ruta no responde (fetch null / red). */
-export const SAT_ERR_TEXT = "sin conexión con la ruta";
+export const SAT_ERR_TEXT = "no connection to the route";
 /** Servidor respondio source="unavailable" (cadena agotada). */
-export const SAT_NA_TEXT = "sin datos";
+export const SAT_NA_TEXT = "no data";
 
 export type SatPanelState =
   | { kind: "loading" }

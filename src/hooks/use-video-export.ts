@@ -106,18 +106,18 @@ export function useVideoExport(canvas: HTMLCanvasElement | null): VideoExportCon
       // "grabacion en curso o finalizando"; se nullifica en onstop/onerror.
       if (recorderRef.current !== null) return false;
       if (!canvas) {
-        showToast({ title: "Escena lista en breve", description: "El canvas 3D aún no está montado." });
+        showToast({ title: "Scene ready shortly", description: "The 3D canvas is not mounted yet." });
         return false;
       }
       if (!supported) {
         showToast({
-          title: "Grabación no soportada",
-          description: "Este navegador no ofrece MediaRecorder/captureStream sobre canvas.",
+          title: "Recording not supported",
+          description: "This browser does not offer MediaRecorder/captureStream over canvas.",
         });
         return false;
       }
       if (document.visibilityState !== "visible") {
-        showToast({ title: "Pestaña en segundo plano", description: "Vuelve a la pestaña para grabar el clip." });
+        showToast({ title: "Tab in the background", description: "Come back to the tab to record the clip." });
         return false;
       }
 
@@ -130,13 +130,13 @@ export function useVideoExport(canvas: HTMLCanvasElement | null): VideoExportCon
           is4K(canvas.width, canvas.height)
         );
       } catch {
-        showToast({ title: "No se pudo abrir la captura", description: "captureStream falló sobre este canvas." });
+        showToast({ title: "Could not open the capture", description: "captureStream failed on this canvas." });
         return false;
       }
       if (!format) {
         stream.getTracks().forEach((t) => t.stop());
-        setError("Sin formato de vídeo soportado");
-        showToast({ title: "Sin formato soportado", description: "MediaRecorder no admite ningún MIME en este navegador." });
+        setError("No supported video format");
+        showToast({ title: "No supported format", description: "MediaRecorder does not accept any MIME type in this browser." });
         return false;
       }
 
@@ -149,8 +149,8 @@ export function useVideoExport(canvas: HTMLCanvasElement | null): VideoExportCon
         });
       } catch {
         stream.getTracks().forEach((t) => t.stop());
-        setError("MediaRecorder no pudo arrancar con el formato elegido");
-        showToast({ title: "Grabación no disponible", description: `MIME rechazado: ${format.mimeType}` });
+        setError("MediaRecorder could not start with the chosen format");
+        showToast({ title: "Recording unavailable", description: `MIME rejected: ${format.mimeType}` });
         return false;
       }
 
@@ -170,8 +170,8 @@ export function useVideoExport(canvas: HTMLCanvasElement | null): VideoExportCon
         stream.getTracks().forEach((t) => t.stop());
         recorderRef.current = null;
         streamRef.current = null;
-        setError("Error del codificador durante la grabación");
-        showToast({ title: "Grabación interrumpida", description: "El codificador reportó un error; se descarta el clip." });
+        setError("Encoder error during recording");
+        showToast({ title: "Recording interrupted", description: "The encoder reported an error; the clip is discarded." });
       };
       recorder.onstop = () => {
         // FIX1: si vino de onerror, no descargar el clip parcial.
@@ -198,16 +198,16 @@ export function useVideoExport(canvas: HTMLCanvasElement | null): VideoExportCon
           try {
             downloadBlob(blob, ext, epoch);
             showToast({
-              title: "Clip listo",
-              description: `${buildVideoName(epoch, ext)} · ${(blob.size / 1e6).toFixed(1)} MB · solo canvas (sin HUD ni audio).`,
+              title: "Clip ready",
+              description: `${buildVideoName(epoch, ext)} · ${(blob.size / 1e6).toFixed(1)} MB · canvas only (no HUD, no audio).`,
             });
           } catch {
-            showToast({ title: "Descarga bloqueada", description: "El navegador rechazó la descarga automática; usa un clic reciente." });
+            showToast({ title: "Download blocked", description: "The browser rejected the automatic download; use a recent click." });
           } finally {
             setBusy(false);
           }
         } else if (!discard) {
-          showToast({ title: "Clip vacío", description: "No se capturaron frames; inténtalo con la pestaña visible." });
+          showToast({ title: "Empty clip", description: "No frames were captured; try again with the tab visible." });
         }
         // Si discard: el toast de error ya se emitio en onerror; nada mas.
       };
@@ -246,7 +246,7 @@ export function useVideoExport(canvas: HTMLCanvasElement | null): VideoExportCon
   React.useEffect(() => {
     const onVis = () => {
       if (document.visibilityState !== "visible" && recorderRef.current?.state === "recording") {
-        showToast({ title: "Pestaña oculta", description: "Grabación detenida para evitar un clip congelado." });
+        showToast({ title: "Tab hidden", description: "Recording stopped to avoid a frozen clip." });
         recorderRef.current.stop();
       }
     };

@@ -26,7 +26,7 @@ export default function FlarePanel({
     return (
       <PanelBox title="Flare / SID">
         <div className="text-xs text-slate-500 py-6 text-center animate-pulse">
-          Esperando X-ray GOES…
+          Waiting for GOES X-ray…
         </div>
       </PanelBox>
     );
@@ -64,7 +64,7 @@ export default function FlarePanel({
     >
       <div className="flex items-center justify-between">
         <span className="flex items-center gap-1.5 text-[11px] uppercase tracking-wider text-slate-400">
-          <Zap size={12} /> Pico 3 h
+          <Zap size={12} /> 3 h peak
         </span>
         <span className={`font-mono font-semibold ${hot ? "text-red-400" : "text-emerald-400"}`}>
           {st.cls}
@@ -79,8 +79,8 @@ export default function FlarePanel({
       </div>
       <div className="text-[10px] text-slate-500 mt-0.5">
         {st.peakTime
-          ? `pico ${new Date(st.peakTime).toISOString().slice(5, 16).replace("T", " ") + "Z"}`
-          : "sin pico en ventana"}
+          ? `peak ${new Date(st.peakTime).toISOString().slice(5, 16).replace("T", " ") + "Z"}`
+          : "no peak in window"}
         {hot && fluxNow > 0 ? ` · SID subsolar ${sidDb.toFixed(1)} dB (demo abs)` : ""}
       </div>
 
@@ -88,8 +88,8 @@ export default function FlarePanel({
         <div className="mt-1.5 flex items-start gap-1.5 text-[10px] text-red-300/90 leading-snug">
           <TriangleAlert size={11} className="shrink-0 mt-0.5" />
           <span>
-            Flash díaside + SID activos (siguen al terminador real; el motor
-            X-ray dispara solo con el dato vivo).
+            Dayside flash + SID active (they follow the real terminator; the
+            X-ray engine only fires with live data).
           </span>
         </div>
       )}
@@ -97,7 +97,7 @@ export default function FlarePanel({
       {/* O3.4: cross-check DONKI FLR en la ventana */}
       <div className="mt-1.5 pt-1.5 border-t border-white/10">
         <div className="text-[10px] uppercase tracking-wider text-slate-500">
-          DONKI FLR {flares ? `(${flrList.length} en ventana)` : "(sin datos)"}
+          DONKI FLR {flares ? `(${flrList.length} in window)` : "(no data)"}
         </div>
         {flrList.slice(0, 3).map((f) => (
           <div key={f.flrId} className="flex items-center justify-between mt-0.5 text-[10px]">
@@ -112,12 +112,12 @@ export default function FlarePanel({
           </div>
         ))}
         {flares && flrList.length === 0 && (
-          <div className="text-[10px] text-slate-600">Sin flares DONKI en la ventana.</div>
+          <div className="text-[10px] text-slate-600">No DONKI flares in the window.</div>
         )}
       </div>
       {/* O3.5: cierre con #5 (P1-260: #5 aterrizó en el 259). */}
       <div className="text-[10px] text-slate-600 mt-1">
-        Cierre con #5 (WSPRnet): activo — ver panel WSPRnet.
+        Closure with #5 (WSPRnet): active — see WSPRnet panel.
       </div>
     </PanelBox>
   );
