@@ -154,16 +154,15 @@ retry for a few seconds before declaring failure.
 
 ## Assets (textures)
 
-| File | Dimensions | Quality | Use |
-| --- | --- | --- | --- |
-| `public/textures/earth-day.jpg` | 5400×2700 | q88 | day texture |
-| `public/textures/earth-night-hires.jpg` | 8192×4096 | q86, progressive 4:4:4 | high-resolution night side |
-| `public/textures/earth-night.jpg` | 2048×1024 | q84 | fallback for modest GPUs |
+| File | Dimensions | Quality / source | Use | Licence |
+| --- | --- | --- | --- | --- |
+| `public/textures/earth-day.jpg` | 5400 x 2700 | NASA BMNG (base) | day texture | NASA public domain -- see LICENSE-TEXTURES.md |
+| `public/textures/earth-night.png` | 4096 x 2048 | NASA SVS 30003 (DMSP+BMNG) | night texture | NASA / NASA GSFC (public domain) -- see LICENSE-TEXTURES.md |
 
-The loader only uses the hires texture when
-`renderer.capabilities.maxTextureSize >= 8192` (constant
-`NIGHT_HIRES_MIN_MAX_TEXTURE` in `IonosphereScene.tsx`); otherwise it loads the
-fallback.
+R3.0 (r3/0-texturas-licencia) removed the hires 8192 side and legacy earth-night.jpg.
+The night side now uses the verified SVS asset. Provenance, hash and committed weight
+are recorded in LICENSE-TEXTURES.md. The loader in IonosphereScene.tsx now loads a single
+PNG (`/textures/earth-night.png`).
 
 ## Project gates
 

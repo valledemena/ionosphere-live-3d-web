@@ -97,9 +97,7 @@ import {
   stationPointSizeClamp,
 } from "./types";
 
-// Textura nocturna hires = 8192 px de ancho (drop 336-B; era 13500). Gate de
-// maxTextureSize para elegirla vs el fallback earth-night.jpg (2048x1024 px).
-const NIGHT_HIRES_MIN_MAX_TEXTURE = 8192;
+// R3.0 (licencia): solo dmsp_4096 (4096x2048 px). Ver LICENSE-TEXTURES.md.
 
 const SOLAR_WIND_STOPS: { t: number; c: [number, number, number] }[] = [
   { t: 0.0, c: [0.45, 0.22, 0.95] },
@@ -309,12 +307,7 @@ export default function IonosphereScene(props: Props) {
       renderer.toneMappingExposure = 1.12;
 
       const dayLoader = new THREE.TextureLoader().loadAsync("/textures/earth-day.jpg");
-      // W-4 misc: noche hires del app (8192 px) con gate de capacidad
-      // (espejo imageFitsGL); fallback a la de 2048x1024 en GPU modestas.
-      const hiresOk = renderer.capabilities.maxTextureSize >= NIGHT_HIRES_MIN_MAX_TEXTURE;
-      const nightLoader = new THREE.TextureLoader()
-        .loadAsync(hiresOk ? "/textures/earth-night-hires.jpg" : "/textures/earth-night.jpg")
-        .catch(() => new THREE.TextureLoader().loadAsync("/textures/earth-night.jpg"));
+      const nightLoader = new THREE.TextureLoader().loadAsync("/textures/earth-night.png");
       const [dayTex, nightTex] = await Promise.all([dayLoader, nightLoader]);
       if (disposed) {
         renderer.dispose();
