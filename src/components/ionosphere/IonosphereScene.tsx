@@ -348,9 +348,7 @@ export default function IonosphereScene(props: Props) {
       const composer = new EffectComposer(renderer, rt);
       composer.addPass(new RenderPass(scene, camera));
       const bloom = new UnrealBloomPass(new THREE.Vector2(size.x, size.y), 0.55, 0.5, 0.72);
-      // TEMP W11 (measurement only, revert): ?bloom=off isolates the direct
-      // atmosphere emission from the bloom tail.
-      if (new URLSearchParams(window.location.search).get("bloom") !== "off") composer.addPass(bloom);
+      composer.addPass(bloom);
       composer.addPass(new OutputPass());
       // W-3 god rays (P1-177): ultimo pase = post-ACES por construccion
       // (el composer vuelca a pantalla el ultimo pase activo). GAIN display.
@@ -363,9 +361,7 @@ export default function IonosphereScene(props: Props) {
       const earth = buildEarth(dayTex, nightTex);
       scene.add(earth.mesh);
       const atmo = buildAtmosphere();
-      // TEMP W11 (measurement only, revert): ?atmo=off omits the shell so the
-      // radial ON/OFF pair of the halo metric can be captured on the real app.
-      if (new URLSearchParams(window.location.search).get("atmo") !== "off") scene.add(atmo.mesh);
+      scene.add(atmo.mesh);
       const cmapTex = buildColormapTexture("viridis");
       const shell = buildIonShell(cmapTex);
       scene.add(shell.mesh);
