@@ -30,5 +30,8 @@ Thumbs.db
 # test / coverage
 coverage/
 
+# runtime artifacts
+dev-r34.pid
+
 # vercel
 .vercel/
